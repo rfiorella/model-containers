@@ -9,8 +9,12 @@ FROM escomp/base-centos8
 
 # centos8 workaround
 RUN dnf -y --allowerasing --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
-RUN yum -y update && yum -y install python3-devel 
+RUN yum -y update && yum -y install python3-devel
 
+RUN dnf -y --enablerepo=powertools install perl-Switch 
+
+RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade setuptools
 RUN pip3 install wheel
 RUN pip3 install numpy
 RUN pip3 install Cython
@@ -18,7 +22,7 @@ RUN pip3 install cftime
 RUN pip3 install netcdf4
 
 # link python3 to python
-RUN ln -s /usr/bin/python3 /usr/bin/python
+# RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # install nco
 RUN dnf --enablerepo=powertools install -y nco
