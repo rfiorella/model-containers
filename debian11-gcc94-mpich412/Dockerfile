@@ -2,7 +2,7 @@
 # Debian baseOS docker container to use with ELM/CTSM builds
 # ----------------------------------------------------------------------
 
-FROM debian:bullseye-slim 
+FROM debian:bullseye
 
 # Set a few variables that can be used to control the docker build
 ARG OPENMPI_VERSION=4.1.2
@@ -30,6 +30,8 @@ RUN apt-get update -y \
     && apt-get install -y \
     cmake \
     git \
+    gcc-9 \
+    gfortran-9 \
     subversion \
     bzip2 \
     libgmp3-dev \
@@ -84,6 +86,10 @@ ENV LANGUAGE en_US.UTF-8
 
 ## check locales
 RUN locale -a
+
+## (force) link proper fortran compilers and python install
+RUN ln -sf /usr/bin/python3 /usr/bin/python \
+    && ln -sf /usr/bin/gfortran-9 /usr/bin/gfortran
 
 ## compile openMPI
 RUN cd / \
