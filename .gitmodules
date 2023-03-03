@@ -1,3 +1,6 @@
 [submodule "simulation_containers"]
 	path = simulation_containers
 	url = https://github.com/rfiorella/simulation_containers.git
+[submodule "ESCOMP-Containers"]
+	path = ESCOMP-Containers
+	url = https://github.com/ESCOMP/ESCOMP-Containers.git
