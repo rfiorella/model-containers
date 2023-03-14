@@ -11,11 +11,11 @@ ARG NETCDF_VERSION=4.8.1
 ARG NETCDF_FORTRAN_VERSION=4.5.4
 
 # echo back options
-RUN echo $NCPUS \
-    && echo $OPENMPI_VERSION \
-    && echo $HDF5_VERSION \
-    && echo $NETCDF_VERSION \
-    && echo $NETCDF_FORTRAN_VERSION
+#RUN echo $NCPUS \
+#    && echo $OPENMPI_VERSION \
+#    && echo $HDF5_VERSION \
+#    && echo $NETCDF_VERSION \
+#    && echo $NETCDF_FORTRAN_VERSION
 
 # set path variables
 ENV PATH=/usr/local/bin:$PATH
@@ -74,7 +74,8 @@ RUN apt-get update -y \
     ncview \
     locales \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean all
+    && apt-get clean all \
+    && apt autoremove
 
 ## Install program to configure locales
 RUN dpkg-reconfigure locales && \
@@ -210,7 +211,6 @@ RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_compilers.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_machines.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker.cmake \
-    && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && cd / \
     && ln -s /usr/bin/ncap2 /usr/bin/ncap
 
