@@ -27,6 +27,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/netcdf/lib
 
 # Update the system and install initial dependencies
 RUN apt-get update -y \
+    && apt-get upgrade -y \
     && apt-get install -y \
     cmake \
     git \
@@ -169,6 +170,7 @@ RUN wget https://downloads.unidata.ucar.edu/netcdf-fortran/4.5.4/netcdf-fortran-
 ## Install python libraries for OLMT
 RUN pip3 install --upgrade pip \
     && pip3 install --upgrade setuptools \
+    && pip3 install --upgrade wheel \
     && pip3 install numpy Cython \
     && pip3 install netcdf4 scipy mpi4py \
     && pip3 install cftime configparser h5py
@@ -180,10 +182,22 @@ ENV REPOSITORY_RAW_URL=https://raw.githubusercontent.com/FASSt-simulation/simula
 ENV TOOLS_REPOSITORY_RAW_URL=https://raw.githubusercontent.com/FASSt-simulation/fasst_simulation_tools
 ENV USER=modeluser
 
+# Add new group, user, and user directory with user permissions
+RUN groupadd -r dockerusers \
+    && useradd -ms /bin/bash $USER -u 1001 -g dockerusers \
+    && chown $USER:dockerusers /home/$USER
+
 RUN cd / \
     && mkdir -p baselines \
+    && mkdir -p output \
+    && mkdir -p inputdata \
     && mkdir -p .cime \
-    && mkdir -p /home/.cime 
+    && mkdir -p /home/$USER/.cime \
+    && chown $USER .cime \
+    && chown $USER baselines \
+    && chown $USER output \
+    && chown $USER inputdata \
+    && chown $USER /home/$USER/.cime
 
 RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && cd /.cime \
@@ -191,7 +205,7 @@ RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_compilers.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_machines.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker.cmake \
-    && cd /home/.cime \
+    && cd /home/$USER/.cime \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_compilers.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_machines.xml \
@@ -200,6 +214,7 @@ RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && cd / \
     && ln -s /usr/bin/ncap2 /usr/bin/ncap
 
-WORKDIR /home/
-
+WORKDIR /home/$USER
+USER ${USER}
+RUN export USER=${USER}
 ### EOF
