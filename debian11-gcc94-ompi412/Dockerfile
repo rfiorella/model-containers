@@ -189,16 +189,16 @@ RUN groupadd -r dockerusers \
     && chown $USER:dockerusers /home/$USER
 
 RUN cd / \
-    && mkdir -p baselines \
-    && mkdir -p output \
-    && mkdir -p inputdata \
     && mkdir -p .cime \
     && mkdir -p /home/$USER/.cime \
+    && mkdir -p /home/$USER/baselines \
+    && mkdir -p /home/$USER/output \
+    && mkdir -p /home/$USER/inputdata \
     && chown $USER .cime \
-    && chown $USER baselines \
-    && chown $USER output \
-    && chown $USER inputdata \
-    && chown $USER /home/$USER/.cime
+    && chown $USER /home/$USER/.cime \
+    && chown $USER /home/$USER/baselines \
+    && chown $USER /home/$USER/output \
+    && chown $USER /home/$USER/inputdata 
 
 RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
     && cd /.cime \
