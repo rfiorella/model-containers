@@ -7,7 +7,7 @@ FROM debian:bullseye
 # Set a few variables that can be used to control the docker build
 ARG OPENMPI_VERSION=4.1.2
 ARG HDF5_VERSION=1.12.1
-ARG NETCDF_VERSION=4.8.1
+ARG NETCDF_VERSION=4.8.2
 ARG NETCDF_FORTRAN_VERSION=4.5.4
 
 # echo back options
@@ -34,10 +34,14 @@ RUN apt-get update -y \
     gcc-9 \
     libstdc++-9-dev \ 
     gfortran-9 \
+    gdb \
     subversion \
     bzip2 \
     libgmp3-dev \
     m4 \
+    autoconf \
+    automake \
+    libtool \
     wget \
     libcurl4-openssl-dev \
     zlib1g-dev \
@@ -102,7 +106,7 @@ RUN cd / \
     && cd openmpi-${OPENMPI_VERSION} \
     && export PATH=/usr/local/bin:$PATH \
     && export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH \
-    && ./configure --enable-static \
+    && ./configure --enable-static CPPFLAGS="-fPIC" \
     && make \
     && make install \
     && cd / \
@@ -129,7 +133,7 @@ RUN cd / \
     && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz \
     && tar -zxvf hdf5-1.12.1.tar.gz \
     && cd hdf5-1.12.1 \
-    && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC" ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
     && make \
     && make install \
     && export PATH=/usr/local/hdf5/bin:$PATH \
@@ -137,6 +141,20 @@ RUN cd / \
     && cd / \
     && rm -r hdf5-1.12.1 \
     && rm hdf5-1.12.1.tar.gz
+
+## PnetCDF
+RUN cd / \
+    && mkdir -p /usr/local/pnetcdf \
+    && git clone --depth 1 --branch checkpoint.1.12.3 https://github.com/Parallel-NetCDF/PnetCDF.git \
+    && cd PnetCDF \
+    && autoreconf -i \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC" ./configure --prefix=/usr/local/pnetcdf \
+    && make \
+    && make install \ 
+    && export PATH=/usr/local/pnetcdf/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/pnetcdf/lib \
+    && cd / \
+    && rm -r PnetCDF/
 
 ## netCDF
 RUN cd / \
@@ -146,7 +164,7 @@ RUN cd / \
     && cd netcdf-c-4.8.1 \
     && export H5DIR=/usr/local/hdf5 \
     && export NCDIR=/usr/local/netcdf \
-    && CC=mpicc CPPFLAGS=-I${H5DIR}/include LDFLAGS=-L${H5DIR}/lib ./configure --enable-parallel-tests --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC" LDFLAGS="-L${H5DIR}/lib -L/usr/local/pnetcdf/lib" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && export PATH=/usr/local/netcdf/bin:$PATH \
@@ -161,7 +179,7 @@ RUN wget https://downloads.unidata.ucar.edu/netcdf-fortran/4.5.4/netcdf-fortran-
     && cd netcdf-fortran-4.5.4 \
     && export NCDIR=/usr/local/netcdf \
     && export NFDIR=/usr/local/netcdf \
-    && FC=mpif90 CPPFLAGS=-I${NCDIR}/include LDFLAGS=-L${NCDIR}/lib ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && FC=mpifort CC=mpicc CPPFLAGS=-I${NCDIR}/include LDFLAGS=-L${NCDIR}/lib ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make \
     && make install \
     && cd / \
