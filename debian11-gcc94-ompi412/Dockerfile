@@ -178,10 +178,10 @@ RUN pip3 install --upgrade pip \
 
 ## Get docker configuration for E3SM
 # where to get the ELM source code
-ENV REPOSITORY_URL=https://github.com/FASSt-simulation/simulation_containers
-ENV REPOSITORY_RAW_URL=https://raw.githubusercontent.com/FASSt-simulation/simulation_containers
-ENV TOOLS_REPOSITORY_RAW_URL=https://raw.githubusercontent.com/FASSt-simulation/fasst_simulation_tools
-ENV USER=modeluser
+ENV REPOSITORY_URL=https://github.com/rfiorella/simulation_containers
+ENV REPOSITORY_RAW_URL=https://raw.githubusercontent.com/rfiorella/simulation_containers
+ENV TOOLS_REPOSITORY_RAW_URL=https://raw.githubusercontent.com/rfiorella/fasst_simulation_tools
+ENV USER=ngeearctic
 
 # Add new group, user, and user directory with user permissions
 RUN groupadd -r dockerusers \
@@ -189,28 +189,33 @@ RUN groupadd -r dockerusers \
     && chown $USER:dockerusers /home/$USER
 
 RUN cd / \
-    && mkdir -p baselines \
-    && mkdir -p output \
-    && mkdir -p inputdata \
     && mkdir -p .cime \
     && mkdir -p /home/$USER/.cime \
+    && mkdir -p /home/$USER/baselines \
+    && mkdir -p /home/$USER/output \
+    && mkdir -p /home/$USER/inputdata \
+    && mkdir -p /home/$USER/tools \
     && chown $USER .cime \
-    && chown $USER baselines \
-    && chown $USER output \
-    && chown $USER inputdata \
-    && chown $USER /home/$USER/.cime
+    && chown $USER /home/$USER/.cime \
+    && chown $USER /home/$USER/baselines \
+    && chown $USER /home/$USER/output \
+    && chown $USER /home/$USER/inputdata \
+    && chown $USER /home/$USER/tools 
 
-RUN wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu.cmake \
-    && cd /.cime \
+RUN cd /.cime \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_compilers.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_machines.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker.cmake \
+    && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker8.cmake \
+    && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker16.cmake \
     && cd /home/$USER/.cime \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_compilers.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/config_machines.xml \
     && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker.cmake \
+    && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker8.cmake \
+    && wget $REPOSITORY_RAW_URL/main/docker/elm/cime_config/gnu_docker16.cmake \
     && cd / \
     && ln -s /usr/bin/ncap2 /usr/bin/ncap
 
