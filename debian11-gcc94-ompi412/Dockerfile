@@ -35,8 +35,10 @@ RUN apt-get update -y \
     libstdc++-9-dev \ 
     gfortran-9 \
     gdb \
+    ddd \
     subversion \
     bzip2 \
+    unzip \
     libgmp3-dev \
     m4 \
     autoconf \
@@ -106,7 +108,7 @@ RUN cd / \
     && cd openmpi-${OPENMPI_VERSION} \
     && export PATH=/usr/local/bin:$PATH \
     && export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH \
-    && ./configure --enable-static CPPFLAGS="-fPIC" \
+    && ./configure --enable-static CPPFLAGS="-fPIC -O2" \
     && make \
     && make install \
     && cd / \
@@ -133,7 +135,7 @@ RUN cd / \
     && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz \
     && tar -zxvf hdf5-1.12.1.tar.gz \
     && cd hdf5-1.12.1 \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC" ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
     && make \
     && make install \
     && export PATH=/usr/local/hdf5/bin:$PATH \
@@ -148,7 +150,7 @@ RUN cd / \
     && git clone --depth 1 --branch checkpoint.1.12.3 https://github.com/Parallel-NetCDF/PnetCDF.git \
     && cd PnetCDF \
     && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC" ./configure --prefix=/usr/local/pnetcdf \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/local/pnetcdf \
     && make \
     && make install \ 
     && export PATH=/usr/local/pnetcdf/bin:$PATH \
@@ -164,7 +166,7 @@ RUN cd / \
     && cd netcdf-c-4.8.1 \
     && export H5DIR=/usr/local/hdf5 \
     && export NCDIR=/usr/local/netcdf \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC" LDFLAGS="-L${H5DIR}/lib -L/usr/local/pnetcdf/lib" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -L/usr/local/pnetcdf/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && export PATH=/usr/local/netcdf/bin:$PATH \
@@ -179,7 +181,7 @@ RUN wget https://downloads.unidata.ucar.edu/netcdf-fortran/4.5.4/netcdf-fortran-
     && cd netcdf-fortran-4.5.4 \
     && export NCDIR=/usr/local/netcdf \
     && export NFDIR=/usr/local/netcdf \
-    && FC=mpifort CC=mpicc CPPFLAGS=-I${NCDIR}/include LDFLAGS=-L${NCDIR}/lib ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib -L/usr/local/pnetcdf/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make \
     && make install \
     && cd / \
@@ -192,7 +194,8 @@ RUN pip3 install --upgrade pip \
     && pip3 install --upgrade wheel \
     && pip3 install numpy Cython \
     && pip3 install netcdf4 scipy mpi4py \
-    && pip3 install cftime configparser h5py
+    && pip3 install cftime configparser h5py \
+    && pip3 install jupyterlab
 
 ## Get docker configuration for E3SM
 # where to get the ELM source code
