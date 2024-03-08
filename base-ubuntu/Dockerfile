@@ -2,7 +2,6 @@
 # Debian baseOS docker container to use with ELM/CTSM builds
 # ----------------------------------------------------------------------
 
-#FROM debian:bullseye
 FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build

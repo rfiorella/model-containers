@@ -20,9 +20,9 @@ ENV H5DIR=/usr/local/hdf5 \
     LD_LIBRARY_PATH=/usr/local/grib2/lib:/usr/local/hdf5/lib:/usr/local/netcdf/lib:/usr/local/pnetcdf/lib:$LD_LIBRARY_PATH
 
 # jasPER
-RUN wget https://www.zlib.net/zlib-1.3.tar.gz \
-  && tar xzvf zlib-1.3.tar.gz \
-  && cd zlib-1.3 \
+RUN wget https://www.zlib.net/current/zlib.tar.gz \
+  && tar xzvf zlib.tar.gz \
+  && cd zlib-1.3.1 \
   && ./configure --prefix=/usr/local/grib2 \
   && make \
   && make install \
@@ -31,7 +31,7 @@ RUN wget https://www.zlib.net/zlib-1.3.tar.gz \
   && wget https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz \
   && tar xzvf libpng-1.2.50.tar.gz \
   && cd libpng-1.2.50 \
-  && if [ `uname -i` = "aarch64" ]; then \
+  && if [ `uname -i` = "aarch64" ] ; then \
      ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/local/grib2 ; \
     else \
       ./configure --prefix=/usr/local/grib2 ; \
@@ -43,7 +43,7 @@ RUN wget https://www.zlib.net/zlib-1.3.tar.gz \
   && wget https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz \
   && tar xzvf jasper-1.900.1.tar.gz \
   && cd jasper-1.900.1 \
-  && if [ `uname -i` = "aarch64" ]; then \
+  && if [ `uname -i` = "aarch64" ] ; then \
      ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/local/grib2 ; \
     else \
       ./configure --prefix=/usr/local/grib2 ; \

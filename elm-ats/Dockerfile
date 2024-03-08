@@ -1,6 +1,6 @@
 # Dockerfile to build ELM-ATS from the amanzi-tpls image
 
-FROM metsi/amanzi-tpls:0.98.4-mpich AS ats-build
+FROM metsi/amanzi-tpls:0.98.7-mpich AS ats-build
 
 ADD ATS-for-ELM /home/amanzi_user/amanzi/src/physics/ats/
 USER root 
