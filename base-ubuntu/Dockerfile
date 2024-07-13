@@ -6,8 +6,8 @@ FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.12.1
-ARG NETCDF_VERSION=4.8.1
-ARG NETCDF_FORTRAN_VERSION=4.5.4
+ARG NETCDF_VERSION=4.9.2
+ARG NETCDF_FORTRAN_VERSION=4.6.1
 ARG build_mpi=True
 ARG mpi_flavor=openmpi
 ARG mpi_version=4.1.5
@@ -100,11 +100,24 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     && apt-get clean all \
     && apt autoremove
 
+# install miniconda and packages for scream
+ENV CONDA_DIR=/opt/conda
+RUN if [ `uname -i` = "aarch64" ] ; then \ 
+      wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda.sh ; \
+    else \
+      wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh ; \
+    fi \
+    && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR 
+
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+RUN conda create -n scream_v1_build pyyaml pylint psutil
 
 ## Set default locale for the environment
-ENV LC_ALL C.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
 
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 #https://support.hdfgroup.org/ftp/HDF5/releases/

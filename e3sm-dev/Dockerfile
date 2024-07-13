@@ -22,7 +22,10 @@ RUN pip3 install --upgrade pip \
     && pip3 install --upgrade wheel \
     && pip3 install numpy Cython \
     && pip3 install netcdf4 scipy mpi4py \
-    && pip3 install cftime configparser h5py
+    && pip3 install cftime configparser \
+    && HDF5_MPI=ON HDF5_DIR=/usr/local/hdf5 pip3 install --no-binary=h5py h5py \
+# more packages needed for EAMxx
+    && pip3 install pylint pyyaml psutil
 
 USER root
 

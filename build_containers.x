@@ -1,6 +1,6 @@
 
 
-multiarch=FALSE
+multiarch=TRUE
 
 
 
