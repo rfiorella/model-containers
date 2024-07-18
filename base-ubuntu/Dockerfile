@@ -8,9 +8,9 @@ FROM ubuntu:jammy
 ARG HDF5_VERSION=1.12.1
 ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.1
-ARG build_mpi=True
+ARG build_mpi=False
 ARG mpi_flavor=openmpi
-ARG mpi_version=4.1.5
+ARG mpi_version=5.0.3
 
 # set path variables
 ENV PATH=/usr/local/netcdf/bin:/usr/local/bin:/usr/local/hdf5/bin:$PATH
@@ -99,20 +99,6 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all \
     && apt autoremove
-
-# install miniconda and packages for scream
-ENV CONDA_DIR=/opt/conda
-RUN if [ `uname -i` = "aarch64" ] ; then \ 
-      wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda.sh ; \
-    else \
-      wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh ; \
-    fi \
-    && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR 
-
-# Put conda in path so we can use conda activate
-ENV PATH=$CONDA_DIR/bin:$PATH
-
-RUN conda create -n scream_v1_build pyyaml pylint psutil
 
 ## Set default locale for the environment
 ENV LC_ALL=C.UTF-8

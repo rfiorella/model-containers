@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 
 #FROM debian:bullseye
-FROM gitlab.lanl.gov:5050/rfiorella/model-containers/baseos:latest
+FROM gitlab.lanl.gov:5050/rfiorella/model-containers/base-serial-dev:latest
 
 ## Get docker configuration for E3SM
 # where to get the ELM source code
@@ -23,9 +23,7 @@ RUN pip3 install --upgrade pip \
     && pip3 install numpy Cython \
     && pip3 install netcdf4 scipy mpi4py \
     && pip3 install cftime configparser \
-    && HDF5_MPI=ON HDF5_DIR=/usr/local/hdf5 pip3 install --no-binary=h5py h5py \
-# more packages needed for EAMxx
-    && pip3 install pylint pyyaml psutil
+    && HDF5_DIR=/usr/local/hdf5 pip3 install --no-binary=h5py h5py
 
 USER root
 
