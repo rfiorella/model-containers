@@ -1,23 +1,15 @@
-image: docker:dind
-
-services:
-  - name: docker:dind
-    command: ["--experimental"]
-
-variables:
-  HTTP_PROXY: "proxyout.lanl.gov:8080"
-  HTTPS_PROXY: "proxyout.lanl.gov:8080"
-  NO_PROXY: "localhost,127.0.0.1"
-  DOCKER_BUILDKIT: 1
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-
-default:
-  before_script:
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use
-    - docker buildx inspect --bootstrap
-
-build_image:
+build_base_image:
+  stage: build
+  variables:
+    http_proxy: proxyout.lanl.gov:8080
+    https_proxy: proxyout.lanl.gov:8080
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
   script:
-      - ./build_containers.x
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --build-arg http_proxy=$http_proxy
+      --build-arg https_proxy=$https_proxy
+      --dockerfile "${CI_PROJECT_DIR}/base-ubuntu/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:latest"
