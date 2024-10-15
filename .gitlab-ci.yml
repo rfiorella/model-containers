@@ -1,8 +1,8 @@
 build_base_image:
   stage: build
   variables:
-    http_proxy: proxyout.lanl.gov:8080
-    https_proxy: proxyout.lanl.gov:8080
+    http_proxy: "https://proxyout.lanl.gov:8080"
+    https_proxy: "https://proxyout.lanl.gov:8080"
   image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
