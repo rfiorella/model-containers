@@ -17,6 +17,6 @@ default:
     - docker buildx create --use
     - docker buildx inspect --bootstrap
 
-#build_image:
-#  script:
-#      - ./build_containers.x
+build_image:
+  script:
+      - ./build_containers.x
