@@ -1,7 +1,7 @@
 image: docker:dind
 
 services:
-  - docker:dind
+  - name: docker:dind
     command: ["--experimental"]
 
 variables:
