@@ -1,3 +1,8 @@
+image: docker:dind
+
+services:
+  - docker:dind
+
 default:
   before_script:
     - docker info
