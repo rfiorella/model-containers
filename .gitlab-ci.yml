@@ -4,12 +4,11 @@ build_base_image:
     http_proxy: "https://proxyout.lanl.gov:8080"
     https_proxy: "https://proxyout.lanl.gov:8080"
     no_proxy: "localhost,127.0.0.1,*.lanl.gov,lanl.gov"
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
   image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
-  variables:
-    DOCKER_HOST: tcp://localhost:2375
-    DOCKER_TLS_CERTDIR: ""
   script:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
