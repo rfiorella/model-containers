@@ -1,0 +1,9 @@
+default:
+  before_script:
+    - docker info
+    - docker buildx create --use
+    - docker buildx inspect --bootstrap
+
+build_image:
+  script:
+      - ./build_containers.x
