@@ -2,12 +2,18 @@ image: docker:dind
 
 services:
   - docker:dind
+    command: ["--experimental"]
+
+variables:
+  HTTP_PROXY:"proxyout.lanl.gov:8080"
+  HTTPS_PROXY:"proxyout.lanl.gov:8080"
+  NO_PROXY:"localhost,127.0.0.1"
 
 default:
   before_script:
     - docker buildx create --use
     - docker buildx inspect --bootstrap
 
-build_image:
-  script:
-      - ./build_containers.x
+#build_image:
+#  script:
+#      - ./build_containers.x
