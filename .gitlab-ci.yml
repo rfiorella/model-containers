@@ -8,6 +8,9 @@ build_base_image:
     name: gcr.io/kaniko-project/executor:v1.23.2-debug
     entrypoint: [""]
   script:
+    # add certificates:
+    - apk add --no-cache ca-certificates
+    - update-ca-certificates  
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --build-arg http_proxy=$http_proxy
