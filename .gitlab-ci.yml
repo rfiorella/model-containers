@@ -5,9 +5,12 @@ services:
     command: ["--experimental"]
 
 variables:
-  HTTP_PROXY:"proxyout.lanl.gov:8080"
-  HTTPS_PROXY:"proxyout.lanl.gov:8080"
-  NO_PROXY:"localhost,127.0.0.1"
+  HTTP_PROXY: "proxyout.lanl.gov:8080"
+  HTTPS_PROXY: "proxyout.lanl.gov:8080"
+  NO_PROXY: "localhost,127.0.0.1"
+  DOCKER_BUILDKIT: 1
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
 
 default:
   before_script:
