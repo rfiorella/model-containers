@@ -1,9 +1,6 @@
 build_base_image:
   stage: build
   variables:
-    http_proxy: "https://proxyout.lanl.gov:8080"
-    https_proxy: "https://proxyout.lanl.gov:8080"
-    no_proxy: "localhost,127.0.0.1,*.lanl.gov,lanl.gov"
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
   image:
@@ -12,8 +9,5 @@ build_base_image:
   script:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
-      --build-arg http_proxy=$http_proxy
-      --build-arg https_proxy=$https_proxy
-      --build-arg no_proxy=$no_proxy
       --dockerfile "${CI_PROJECT_DIR}/base-ubuntu/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}:latest"
