@@ -41,3 +41,20 @@ build_e3sm_image:
       --destination "${CI_REGISTRY_IMAGE}/e3sm-dev:latest"
   needs:
     - build_base_parallel
+
+build_wrf_image:
+  stage: build
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+    GIT_SUBMODULE_STRATEGY: recursive
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/wrf/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/wrf:latest"
+  needs:
+    - build_base_parallel
