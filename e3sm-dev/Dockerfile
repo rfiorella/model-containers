@@ -23,7 +23,7 @@ RUN pip3 install --upgrade pip \
     && pip3 install numpy Cython \
     && pip3 install netcdf4 scipy mpi4py \
     && pip3 install cftime configparser \
-    && HDF5_DIR=/usr/local/hdf5 pip3 install --no-binary=h5py h5py
+    && pip3 install h5py
 
 USER root
 
