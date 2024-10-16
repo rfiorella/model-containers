@@ -1,4 +1,4 @@
-build_base_image:
+build_base_parallel:
   stage: build
   variables:
     DOCKER_HOST: tcp://localhost:2375
@@ -12,7 +12,7 @@ build_base_image:
       --dockerfile "${CI_PROJECT_DIR}/base-ubuntu/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/baseos:latest"
 
-build_base_image:
+build_base_serial:
   stage: build
   variables:
     DOCKER_HOST: tcp://localhost:2375
@@ -40,4 +40,4 @@ build_e3sm_image:
       --dockerfile "${CI_PROJECT_DIR}/e3sm-dev/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/e3sm-dev:latest"
   needs:
-    - build_base_image
+    - build_base_parallel
