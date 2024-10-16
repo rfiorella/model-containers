@@ -5,7 +5,7 @@
 #---------------------------------------------------------
 # rpf updated 231201
 
-FROM gitlab.lanl.gov:5050/rfiorella/model-containers/baseos:latest
+FROM gitlab.lanl.gov:5050/rfiorella/model-containers/base-ubuntu:latest
 
 ENV H5DIR=/usr/local/hdf5 \
     HDF5=/usr/local/hdf5 \
@@ -60,8 +60,8 @@ ENV DISPLAY=host.docker.internal:0
 RUN mkdir -p /home/wrfuser/WPS && mkdir -p /home/wrfuser/WRF
 
 # COPY:
-ADD WRF /home/wrfuser/WRF/
-ADD WPS /home/wrfuser/WPS/
+ADD wrf/WRF /home/wrfuser/WRF/
+ADD wrf/WPS /home/wrfuser/WPS/
 
 RUN groupadd -r wrfuser \
     && useradd -r -m -g wrfuser wrfuser \
