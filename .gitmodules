@@ -1,6 +1,6 @@
 [submodule "wrf/WRF"]
 	path = wrf/WRF
-	url = git@github.com:wrf-model/WRF
+	url = https://github.com/wrf-model/WRF
 [submodule "wrf/WPS"]
 	path = wrf/WPS
-	url = git@github.com:wrf-model/WPS
+	url = https://github.com/wrf-model/WPS
