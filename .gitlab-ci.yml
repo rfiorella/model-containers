@@ -12,6 +12,20 @@ build_base_image:
       --dockerfile "${CI_PROJECT_DIR}/base-ubuntu/Dockerfile"
       --destination "${CI_REGISTRY_IMAGE}/baseos:latest"
 
+build_base_image:
+  stage: build
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/base-ubuntu/Dockerfile-serial"
+      --destination "${CI_REGISTRY_IMAGE}/baseos-serial:latest"
+
 build_e3sm_image:
   stage: build
   variables:
