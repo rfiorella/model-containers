@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 
 #FROM debian:bullseye
-FROM gitlab.lanl.gov:5050/rfiorella/model-containers/base-ubuntu:latest
+FROM rfiorella/model-containers:base-ubuntu-latest
 
 ## Get docker configuration for E3SM
 # where to get the ELM source code

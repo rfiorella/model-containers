@@ -5,12 +5,12 @@
 FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
-ARG HDF5_VERSION=1.12.1
+ARG HDF5_VERSION=1.12.3
 ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.1
 ARG build_mpi=False
 ARG mpi_flavor=openmpi
-ARG mpi_version=5.0.3
+ARG mpi_version=5.0.6
 
 # set path variables
 ENV PATH=/usr/local/netcdf/bin:/usr/local/bin:/usr/local/hdf5/bin:$PATH
@@ -158,16 +158,16 @@ RUN cd / \
     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
 # install ADIOS
-RUN cd / \
-    && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
-    && mkdir adios2-build && cd adios2-build \
-    && cmake ../ADIOS2 \
-    && make -j 4 \
-    && ctest \
-    && make install \
-    && rm -r ../ADIOS2 \
-    && cd / \
-    && rm -r adios2-build \
-    && cd /
+#RUN cd / \
+#    && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
+#    && mkdir adios2-build && cd adios2-build \
+#    && cmake ../ADIOS2 \
+#    && make -j 4 \
+#    && ctest \
+#    && make install \
+#    && rm -r ../ADIOS2 \
+#    && cd / \
+#    && rm -r adios2-build \
+#    && cd /
 
 ### EOF

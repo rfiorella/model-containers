@@ -5,7 +5,7 @@
 #---------------------------------------------------------
 # rpf updated 231201
 
-FROM gitlab.lanl.gov:5050/rfiorella/model-containers/base-ubuntu:latest
+FROM rfiorella/model-containers:base-ubuntu-latest
 
 ENV H5DIR=/usr/local/hdf5 \
     HDF5=/usr/local/hdf5 \
