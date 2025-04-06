@@ -8,15 +8,22 @@ env:
   REGISTRY: docker.io
   IMAGE_OWNER: rfiorella
 
-jobs: 
+jobs:
   build-images:
     strategy:
-      matrix: 
-        os: [ ubuntu-latest ]
+      matrix:
+        os: [ ubuntu-latest, ubuntu-24.04-arm ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
+      - name: Get runner architecture
+        run: |
+          if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
+            echo "ARCH=arm64" >> $GITHUB_ENV
+          else
+            echo "ARCH=amd64" >> $GITHUB_ENV
+          fi
       - name: login to docker hub
         uses: docker/login-action@v3
         with:
@@ -28,7 +35,21 @@ jobs:
           context: .
           file: ./base-ubuntu/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-ubuntu-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-ubuntu-${{ env.ARCH }}-latest
+      - name: build and push e3sm image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./e3sm-dev/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3ms-dev-${{ env.ARCH }}-latest
+      - name: build and push wrf image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./wrf/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-${{ env.ARCH }}-latest
 
 
 
