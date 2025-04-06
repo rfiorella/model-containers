@@ -68,6 +68,8 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     nco \
     ncview \
     locales \
+    gdb \
+    valgrind \
     # install MPI
     && if [ "$build_mpi" = "True" ]; then \
       if [ "$mpi_flavor" = "mpich" ]; then cd / \
