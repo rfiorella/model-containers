@@ -5,7 +5,8 @@
 #---------------------------------------------------------
 # rpf updated 231201
 
-FROM rfiorella/model-containers:base-ubuntu-latest
+ARG BASE_TAG=base-mpich-latest
+FROM rfiorella/model-containers:${BASE_TAG}
 
 ENV H5DIR=/usr/local/hdf5 \
     HDF5=/usr/local/hdf5 \

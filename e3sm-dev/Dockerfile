@@ -3,7 +3,8 @@
 # ----------------------------------------------------------------------
 
 #FROM debian:bullseye
-FROM rfiorella/model-containers:base-ubuntu-latest
+ARG BASE_TAG=base-mpich-latest
+FROM rfiorella/model-containers:${BASE_TAG}
 
 ## Get docker configuration for E3SM
 # where to get the ELM source code
