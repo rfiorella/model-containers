@@ -35,10 +35,10 @@
       </mpirun>
       <module_system type="none"/>
       <environment_variables>
-        <env name="HDF5_HOME">/usr/local/hdf5</env>
-        <env name="NETCDF_PATH">/usr/local/netcdf</env>
-        <env name="NETCDF_C_PATH">/usr/local/netcdf</env>
-        <env name="NETCDF_FORTRAN_PATH">/usr/local/netcdf</env>
+        <env name="HDF5_HOME">/usr</env>
+        <env name="NETCDF_PATH">/usr</env>
+        <env name="NETCDF_C_PATH">/usr</env>
+        <env name="NETCDF_FORTRAN_PATH">/usr</env>
       </environment_variables>
    </machine>
    <machine MACH="docker-ats">

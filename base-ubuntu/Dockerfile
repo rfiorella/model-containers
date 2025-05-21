@@ -12,10 +12,6 @@ ARG build_mpi=False
 ARG mpi_flavor=openmpi
 ARG mpi_version=5.0.6
 
-# set path variables
-ENV PATH=/usr/local/netcdf/bin:/usr/local/bin:/usr/local/hdf5/bin:$PATH
-ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/netcdf/lib:/usr/local/hdf5/lib:$LD_LIBRARY_PATH
-
 # Update the system and install initial dependencies
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
     && apt-get update -y \
@@ -110,11 +106,10 @@ ENV LANGUAGE=en_US.UTF-8
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 #https://support.hdfgroup.org/ftp/HDF5/releases/
 RUN cd / \
-    && mkdir -p /usr/local/hdf5 \
     && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \
@@ -123,11 +118,10 @@ RUN cd / \
 
 ## PnetCDF
 RUN cd / \
-    && mkdir -p /usr/local/pnetcdf \
-    && git clone --depth 1 --branch checkpoint.1.12.3 https://github.com/Parallel-NetCDF/PnetCDF.git \
+    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
     && cd PnetCDF \
     && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/local/pnetcdf \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
     && make \
     && make install \
     && cd / \
@@ -135,13 +129,12 @@ RUN cd / \
 
 ## netCDF
 RUN cd / \
-    && mkdir -p /usr/local/netcdf \
     && wget https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_VERSION}/netcdf-c-${NETCDF_VERSION}.tar.gz \
     && tar -zxvf netcdf-c-${NETCDF_VERSION}.tar.gz \
     && cd netcdf-c-${NETCDF_VERSION} \
-    && export H5DIR=/usr/local/hdf5 \
-    && export NCDIR=/usr/local/netcdf \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -L/usr/local/pnetcdf/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
+    && export H5DIR=/usr \
+    && export NCDIR=/usr \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && cd / \
@@ -150,9 +143,9 @@ RUN cd / \
     && wget https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORTRAN_VERSION}/netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
     && tar -zxvf netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
     && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
-    && export NCDIR=/usr/local/netcdf \
-    && export NFDIR=/usr/local/netcdf \
-    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -I/usr/local/pnetcdf/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib -L/usr/local/pnetcdf/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && export NCDIR=/usr \
+    && export NFDIR=/usr \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make \
     && make install \
     && cd / \
@@ -160,16 +153,16 @@ RUN cd / \
     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
 # install ADIOS
-#RUN cd / \
-#    && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
-#    && mkdir adios2-build && cd adios2-build \
-#    && cmake ../ADIOS2 \
-#    && make -j 4 \
-#    && ctest \
-#    && make install \
-#    && rm -r ../ADIOS2 \
-#    && cd / \
-#    && rm -r adios2-build \
-#    && cd /
+RUN cd / \
+   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
+   && mkdir adios2-build && cd adios2-build \
+   && cmake ../ADIOS2 \
+   && make -j 4 \
+   && ctest \
+   && make install \
+   && rm -r ../ADIOS2 \
+   && cd / \
+   && rm -r adios2-build \
+   && cd /
 
 ### EOF
