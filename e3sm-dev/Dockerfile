@@ -30,11 +30,11 @@ USER root
 
 RUN cd / \
     && mkdir -p /home/$USER/.cime \
-    && mkdir -p /home/$USER/baselines \
+    && mkdir -p /home/$USER/baselines/data \
     && mkdir -p /home/$USER/output \
     && mkdir -p /home/$USER/inputdata \
     && chown $USER /home/$USER/.cime \
-    && chown $USER /home/$USER/baselines \
+    && chown $USER /home/$USER/baselines/data \
     && chown $USER /home/$USER/output \
     && chown $USER /home/$USER/inputdata \
     && ln -s /usr/bin/ncap2 /usr/bin/ncap
