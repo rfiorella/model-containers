@@ -6,11 +6,11 @@ FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.12.3
-ARG NETCDF_VERSION=4.9.2
-ARG NETCDF_FORTRAN_VERSION=4.6.1
-ARG build_mpi=False
+ARG NETCDF_VERSION=4.9.3
+ARG NETCDF_FORTRAN_VERSION=4.6.2
+ARG build_mpi=True
 ARG mpi_flavor=openmpi
-ARG mpi_version=5.0.6
+ARG mpi_version=5.0.7
 
 # Update the system and install initial dependencies
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
@@ -33,6 +33,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     wget \
     libcurl4-openssl-dev \
     zlib1g-dev \
+    libzstd-dev \
     libncurses5-dev \
     csh \
     liblapack-dev \
@@ -109,7 +110,7 @@ RUN cd / \
     && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \
@@ -121,7 +122,7 @@ RUN cd / \
     && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
     && cd PnetCDF \
     && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" ./configure --disable-in-place-swap --prefix=/usr/ \
     && make \
     && make install \
     && cd / \
@@ -134,7 +135,7 @@ RUN cd / \
     && cd netcdf-c-${NETCDF_VERSION} \
     && export H5DIR=/usr \
     && export NCDIR=/usr \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O3" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-extra-example-tests --enable-filter-testing --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && cd / \
