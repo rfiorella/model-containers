@@ -20,6 +20,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     cmake \
     git \
     gcc \
+    cpp \
     gfortran \
     expat \
     subversion \
