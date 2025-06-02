@@ -105,6 +105,8 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US.UTF-8
 
+ENV LD_LIBRARY_PATH=/usr/lib/openmpi:${LD_LIBRARY_PATH}
+
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 #https://support.hdfgroup.org/ftp/HDF5/releases/
 RUN cd / \
