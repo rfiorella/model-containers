@@ -120,53 +120,53 @@ RUN which mpicc && which mpifort \
     && rm -r hdf5-${HDF5_VERSION} \
     && rm hdf5-${HDF5_VERSION}.tar.gz
 
-# ## PnetCDF
-# RUN cd / \
-#     && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
-#     && cd PnetCDF \
-#     && autoreconf -i \
-#     && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" ./configure --disable-in-place-swap --prefix=/usr/ \
-#     && make \
-#     && make install \
-#     && cd / \
-#     && rm -r PnetCDF/
+## PnetCDF
+RUN cd / \
+    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
+    && cd PnetCDF \
+    && autoreconf -i \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" ./configure --disable-in-place-swap --prefix=/usr/ \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r PnetCDF/
 
-# ## netCDF
-# RUN cd / \
-#     && wget https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_VERSION}/netcdf-c-${NETCDF_VERSION}.tar.gz \
-#     && tar -zxvf netcdf-c-${NETCDF_VERSION}.tar.gz \
-#     && cd netcdf-c-${NETCDF_VERSION} \
-#     && export H5DIR=/usr \
-#     && export NCDIR=/usr \
-#     && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O3" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-extra-example-tests --enable-filter-testing --enable-pnetcdf --prefix=${NCDIR} \
-#     && make \
-#     && make install \
-#     && cd / \
-#     && rm -r netcdf-c-${NETCDF_VERSION} \
-#     && rm netcdf-c-${NETCDF_VERSION}.tar.gz \
-#     && wget https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORTRAN_VERSION}/netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
-#     && tar -zxvf netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
-#     && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
-#     && export NCDIR=/usr \
-#     && export NFDIR=/usr \
-#     && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
-#     && make \
-#     && make install \
-#     && cd / \
-#     && rm -r netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
-#     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
+## netCDF
+RUN cd / \
+    && wget https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_VERSION}/netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && tar -zxvf netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && cd netcdf-c-${NETCDF_VERSION} \
+    && export H5DIR=/usr \
+    && export NCDIR=/usr \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O3" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-extra-example-tests --enable-filter-testing --enable-pnetcdf --prefix=${NCDIR} \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r netcdf-c-${NETCDF_VERSION} \
+    && rm netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && wget https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORTRAN_VERSION}/netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
+    && tar -zxvf netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
+    && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
+    && export NCDIR=/usr \
+    && export NFDIR=/usr \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
+    && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
-# # install ADIOS
-# RUN cd / \
-#    && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
-#    && mkdir adios2-build && cd adios2-build \
-#    && cmake ../ADIOS2 \
-#    && make -j 4 \
-#    && ctest \
-#    && make install \
-#    && rm -r ../ADIOS2 \
-#    && cd / \
-#    && rm -r adios2-build \
-#    && cd /
+# install ADIOS
+RUN cd / \
+   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
+   && mkdir adios2-build && cd adios2-build \
+   && cmake ../ADIOS2 \
+   && make -j 4 \
+   && ctest \
+   && make install \
+   && rm -r ../ADIOS2 \
+   && cd / \
+   && rm -r adios2-build \
+   && cd /
 
-### EOF
+## EOF
