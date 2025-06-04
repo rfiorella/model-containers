@@ -39,7 +39,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-${{ env.ARCH }}-latest
           build-args: |
             mpi_flavor=openmpi
-            mpi_version=5.0.7
+            mpi_version=4.1.7
   fix-manifest-openmpi:
     needs: build-base-openmpi
     runs-on: ubuntu-latest
