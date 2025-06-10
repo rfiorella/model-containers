@@ -5,9 +5,9 @@
 FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
-ARG HDF5_VERSION=1.14.2
-ARG NETCDF_VERSION=4.9.2
-ARG NETCDF_FORTRAN_VERSION=4.6.0
+ARG HDF5_VERSION=1.14.6
+ARG NETCDF_VERSION=4.9.3
+ARG NETCDF_FORTRAN_VERSION=4.6.2
 ARG build_mpi=True
 ARG mpi_flavor=openmpi
 ARG mpi_version=4.1.5
@@ -42,8 +42,10 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     csh \
     liblapack-dev \
     libblas-dev \
+    libevent-dev \
     libffi7 \
     libffi-dev \
+    libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
     libxml2 \
@@ -150,6 +152,9 @@ RUN cd / \
     && rm -r netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
-# NO ADIOS NEEDED
+# Set some environment variables
+ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
+ENV NETCDF_C_PATH=/usr
+ENV NETCDF_FORTRAN_PATH=/usr
 
 ### EOF

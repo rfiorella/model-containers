@@ -5,7 +5,7 @@
 FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
-ARG HDF5_VERSION=1.12.3
+ARG HDF5_VERSION=1.14.6
 ARG NETCDF_VERSION=4.9.3
 ARG NETCDF_FORTRAN_VERSION=4.6.2
 ARG build_mpi=True
@@ -170,5 +170,11 @@ RUN cd / \
    && cd / \
    && rm -r adios2-build \
    && cd /
+
+
+# Set some environment variables
+ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
+ENV NETCDF_C_PATH=/usr
+ENV NETCDF_FORTRAN_PATH=/usr
 
 ## EOF
