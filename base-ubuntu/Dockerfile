@@ -39,8 +39,10 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     csh \
     liblapack-dev \
     libblas-dev \
+    libevent-dev \
     libffi7 \
     libffi-dev \
+    libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
     libxml2 \
