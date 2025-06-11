@@ -113,7 +113,7 @@ ENV LANGUAGE en_US.UTF-8
 #https://support.hdfgroup.org/ftp/HDF5/releases/
 RUN cd / \
     && mkdir -p /usr/local/hdf5 \
-    && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz \
+    && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
     && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --prefix=/usr/local/hdf5 \

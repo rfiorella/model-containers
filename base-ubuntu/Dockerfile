@@ -109,10 +109,9 @@ ENV LANGUAGE=en_US.UTF-8
 ENV FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')"
 
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
-#https://support.hdfgroup.org/ftp/HDF5/releases/
 RUN which mpicc && which mpifort \
     && cd / \
-    && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz \
+    && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
     && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" FFLAGS=${FIXED_FLAGS} ./configure --enable-fortran --enable-parallel --prefix=/usr \
