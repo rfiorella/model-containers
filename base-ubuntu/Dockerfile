@@ -6,7 +6,7 @@ FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
-ARG NETCDF_VERSION=4.9.3
+ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.2
 ARG build_mpi=True
 ARG mpi_flavor=openmpi
