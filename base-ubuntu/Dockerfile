@@ -8,7 +8,7 @@ FROM ubuntu:jammy
 ARG HDF5_VERSION=1.14.6
 ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.2
-ARG build_mpi=True
+ARG build_mpi=False
 ARG mpi_flavor=openmpi
 ARG mpi_version=4.1.6
 

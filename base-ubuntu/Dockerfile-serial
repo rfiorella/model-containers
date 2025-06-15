@@ -8,9 +8,6 @@ FROM ubuntu:jammy
 ARG HDF5_VERSION=1.14.6
 ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.2
-ARG build_mpi=True
-ARG mpi_flavor=openmpi
-ARG mpi_version=4.1.5
 
 # set path variables
 ENV PATH=/usr/local/netcdf/bin:/usr/local/bin:/usr/local/hdf5/bin:$PATH
@@ -71,34 +68,6 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     nco \
     ncview \
     locales \
-    # install MPI
-    && if [ "$build_mpi" = "True" ]; then \
-      if [ "$mpi_flavor" = "mpich" ]; then cd / \
-        && wget https://www.mpich.org/static/downloads/${mpi_version}/mpich-${mpi_version}.tar.gz \
-        && tar xvf mpich-${mpi_version}.tar.gz \
-        && cd mpich-${mpi_version} \
-        && ./configure --enable-shared --with-device=ch3:sock --enable-fast=all,Os --prefix=/usr \
-        && make \
-        && make install \
-        && cd ../ \
-        && rm -r mpich-${mpi_version}/ \
-        && rm mpich-${mpi_version}.tar.gz ; \
-      elif [ "$mpi_flavor" = "openmpi" ]; then cd / \
-        && export mpi_version_major=`echo ${mpi_version} | cut -c1-3` && echo $mpi_version_major \
-        && wget https://download.open-mpi.org/release/open-mpi/v${mpi_version_major}/openmpi-${mpi_version}.tar.gz \
-        && tar xvf openmpi-${mpi_version}.tar.gz \
-        && cd openmpi-${mpi_version} \
-        && ./configure --enable-shared --prefix=/usr \
-        && make \
-        && make install \
-        && cd ../ \
-        && rm -r openmpi-${mpi_version}/ \
-        && rm openmpi-${mpi_version}.tar.gz ; \
-      else \
-        echo "Unknown mpi_flavor - exiting." \
-        && exit 1 ; \
-      fi \
-    else apt-get install -y lib${mpi_flavor}-dev ; fi \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all \
     && apt autoremove
@@ -116,7 +85,7 @@ RUN cd / \
     && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --prefix=/usr/local/hdf5 \
+    && CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --prefix=/usr/local/hdf5 \
     && make \
     && make install \
     && cd / \
@@ -133,7 +102,7 @@ RUN cd / \
     && cd netcdf-c-${NETCDF_VERSION} \
     && export H5DIR=/usr/local/hdf5 \
     && export NCDIR=/usr/local/netcdf \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib" ./configure --prefix=${NCDIR} \
+    && CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib" ./configure --prefix=${NCDIR} \
     && make \
     && make check \
     && make install \
@@ -145,7 +114,7 @@ RUN cd / \
     && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
     && export NCDIR=/usr/local/netcdf \
     && export NFDIR=/usr/local/netcdf \
-    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} \
+    && CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} \
     && make \
     && make install \
     && cd / \
