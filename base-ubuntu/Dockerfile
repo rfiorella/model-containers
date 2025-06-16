@@ -5,12 +5,12 @@
 FROM ubuntu:jammy
 
 # Set a few variables that can be used to control the docker build
-ARG HDF5_VERSION=1.12.3
+ARG HDF5_VERSION=1.14.6
 ARG NETCDF_VERSION=4.9.2
-ARG NETCDF_FORTRAN_VERSION=4.6.1
+ARG NETCDF_FORTRAN_VERSION=4.6.2
 ARG build_mpi=False
 ARG mpi_flavor=openmpi
-ARG mpi_version=5.0.6
+ARG mpi_version=4.1.6
 
 # Update the system and install initial dependencies
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
@@ -20,6 +20,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     cmake \
     git \
     gcc \
+    cpp \
     gfortran \
     expat \
     subversion \
@@ -33,12 +34,15 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     wget \
     libcurl4-openssl-dev \
     zlib1g-dev \
+    libzstd-dev \
     libncurses5-dev \
     csh \
     liblapack-dev \
     libblas-dev \
+    libevent-dev \
     libffi7 \
     libffi-dev \
+    libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
     libxml2 \
@@ -83,12 +87,10 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
         && wget https://download.open-mpi.org/release/open-mpi/v${mpi_version_major}/openmpi-${mpi_version}.tar.gz \
         && tar xvf openmpi-${mpi_version}.tar.gz \
         && cd openmpi-${mpi_version} \
-        && ./configure --enable-shared --prefix=/usr \
+        && ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all \
         && make \
         && make install \
-        && cd ../ \
-        && rm -r openmpi-${mpi_version}/ \
-        && rm openmpi-${mpi_version}.tar.gz ; \
+        && cd ../ ; \
       else \
         echo "Unknown mpi_flavor - exiting." \
         && exit 1 ; \
@@ -103,13 +105,16 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US.UTF-8
 
+#ENV LD_LIBRARY_PATH=/usr/lib/openmpi:${LD_LIBRARY_PATH}
+ENV FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')"
+
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
-#https://support.hdfgroup.org/ftp/HDF5/releases/
-RUN cd / \
-    && wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz \
+RUN which mpicc && which mpifort \
+    && cd / \
+    && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O1" FFLAGS=${FIXED_FLAGS} ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \
@@ -121,7 +126,7 @@ RUN cd / \
     && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
     && cd PnetCDF \
     && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O1" ./configure --disable-in-place-swap --prefix=/usr/ \
     && make \
     && make install \
     && cd / \
@@ -134,7 +139,7 @@ RUN cd / \
     && cd netcdf-c-${NETCDF_VERSION} \
     && export H5DIR=/usr \
     && export NCDIR=/usr \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-pnetcdf --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O1" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-extra-example-tests --enable-filter-testing --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && cd / \
@@ -145,7 +150,7 @@ RUN cd / \
     && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
     && export NCDIR=/usr \
     && export NFDIR=/usr \
-    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O1" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make \
     && make install \
     && cd / \
@@ -165,4 +170,10 @@ RUN cd / \
    && rm -r adios2-build \
    && cd /
 
-### EOF
+
+# Set some environment variables
+ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
+ENV NETCDF_C_PATH=/usr
+ENV NETCDF_FORTRAN_PATH=/usr
+
+## EOF

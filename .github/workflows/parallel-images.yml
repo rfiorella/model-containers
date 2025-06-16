@@ -37,7 +37,9 @@ jobs:
           file: ./base-ubuntu/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-${{ env.ARCH }}-latest
-          build-args: mpi_flavor=openmpi
+          build-args: |
+            mpi_flavor=openmpi
+            mpi_version=4.1.7
   fix-manifest-openmpi:
     needs: build-base-openmpi
     runs-on: ubuntu-latest
@@ -122,7 +124,9 @@ jobs:
           file: ./base-ubuntu/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-mpich-${{ env.ARCH }}-latest
-          build-args: mpi_flavor=mpich
+          build-args: |
+            mpi_flavor=mpich
+            mpi_version=4.3.0
   fix-manifest-mpich:
     needs: build-base-mpich
     runs-on: ubuntu-latest
