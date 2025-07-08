@@ -122,15 +122,15 @@ RUN which mpicc && which mpifort \
     && rm hdf5-${HDF5_VERSION}.tar.gz
 
 ## PnetCDF
-RUN cd / \
-    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
-    && cd PnetCDF \
-    && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
-    && make \
-    && make install \
-    && cd / \
-    && rm -r PnetCDF/
+#RUN cd / \
+#    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
+#    && cd PnetCDF \
+#    && autoreconf -i \
+#    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
+#    && make \
+#    && make install \
+#    && cd / \
+#    && rm -r PnetCDF/
 
 ## netCDF
 RUN cd / \
@@ -139,7 +139,7 @@ RUN cd / \
     && cd netcdf-c-${NETCDF_VERSION} \
     && export H5DIR=/usr \
     && export NCDIR=/usr \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --disable-dap --enable-pnetcdf --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${H5DIR}/lib" ./configure --disable-dap --disable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && cd / \
@@ -158,22 +158,22 @@ RUN cd / \
     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
 # install ADIOS
-RUN cd / \
-   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
-   && mkdir adios2-build && cd adios2-build \
-   && cmake ../ADIOS2 \
-   && make -j 4 \
-   && ctest \
-   && make install \
-   && rm -r ../ADIOS2 \
-   && cd / \
-   && rm -r adios2-build \
-   && cd /
+#RUN cd / \
+#   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
+#   && mkdir adios2-build && cd adios2-build \
+#   && cmake ../ADIOS2 \
+#   && make -j 4 \
+#   && ctest \
+#   && make install \
+#   && rm -r ../ADIOS2 \
+#   && cd / \
+#   && rm -r adios2-build \
+#   && cd /
 
 
 # Set some environment variables
 ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
 ENV NETCDF_C_PATH=/usr
 ENV NETCDF_FORTRAN_PATH=/usr
-
+ENV NETCDF_PATH=/usr
 ## EOF
