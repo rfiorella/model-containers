@@ -1,7 +1,7 @@
 .PHONY: EAMXX-wiso EAMv2-wiso EAMv3-wiso NGEE-master NGEE-IM3-debug NGEE-IM2-debug NGEE-IM1-debug ELM-ATS ELM-ATS-debug interface
 
 EAMXX-wiso:
-	docker run --rm -it -v /data/scream/baselines:/home/e3smuser/baselines -v /code/E3SM/EAMxx-wiso:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/scream/output:/home/e3smuser/output rfiorella/model-containers:e3sm-openmpi-dev-latest
+	docker run --rm -it -v /code/build-models/eamxx:/home/e3smuser/scripts -v /data/scream/baselines:/home/e3smuser/baselines -v /code/E3SM/EAMxx-wiso:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/scream/output:/home/e3smuser/output rfiorella/model-containers:e3sm-openmpi-dev-latest
 
 EAMv2-wiso:
 	docker run --rm -it -v /code/E3SM/EAMv2-wiso:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/eamv2:/home/e3smuser/output rfiorella/model-containers:e3sm-openmpi-dev-latest
