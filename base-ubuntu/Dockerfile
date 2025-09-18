@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
-# Debian baseOS docker container to use with ELM/CTSM builds
-# ----------------------------------------------------------------------
+# Ubuntu container to build TPLs needed for various ESMs
+#------------------------------------------------------------------------
 
 FROM ubuntu:jammy
 
@@ -70,6 +70,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     locales \
     gdb \
     valgrind \
+    jq \
     # install MPI
     && if [ "$build_mpi" = "True" ]; then \
       if [ "$mpi_flavor" = "mpich" ]; then cd / \
@@ -169,7 +170,6 @@ RUN cd / \
 #   && cd / \
 #   && rm -r adios2-build \
 #   && cd /
-
 
 # Set some environment variables
 ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
