@@ -11,7 +11,7 @@ ARG NETCDF_FORTRAN_VERSION=4.6.2
 
 # set path variables
 ENV PATH=/usr/local/netcdf/bin:/usr/local/bin:/usr/local/hdf5/bin:$PATH
-ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/netcdf/lib:/usr/local/hdf5/lib:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/netcdf/lib:/usr/local/hdf5/lib
 
 # Update the system and install initial dependencies
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
@@ -72,11 +72,10 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     && apt-get clean all \
     && apt autoremove
 
-
 ## Set default locale for the environment
-ENV LC_ALL C.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
 
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 #https://support.hdfgroup.org/ftp/HDF5/releases/

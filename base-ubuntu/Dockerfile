@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------
-# Debian baseOS docker container to use with ELM/CTSM builds
-# ----------------------------------------------------------------------
+# Ubuntu container to build TPLs needed for various ESMs
+#------------------------------------------------------------------------
 
 FROM ubuntu:jammy
 
@@ -115,7 +115,7 @@ RUN which mpicc && which mpifort \
     && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O1" FFLAGS=${FIXED_FLAGS} ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3" FFLAGS=${FIXED_FLAGS} ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \
@@ -124,14 +124,14 @@ RUN which mpicc && which mpifort \
 
 ## PnetCDF
 RUN cd / \
-    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
-    && cd PnetCDF \
-    && autoreconf -i \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O1" ./configure --disable-in-place-swap --prefix=/usr/ \
-    && make \
-    && make install \
-    && cd / \
-    && rm -r PnetCDF/
+   && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
+   && cd PnetCDF \
+   && autoreconf -i \
+   && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
+   && make \
+   && make install \
+   && cd / \
+   && rm -r PnetCDF/
 
 ## netCDF
 RUN cd / \
@@ -140,7 +140,7 @@ RUN cd / \
     && cd netcdf-c-${NETCDF_VERSION} \
     && export H5DIR=/usr \
     && export NCDIR=/usr \
-    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O1" LDFLAGS="-L${H5DIR}/lib -lpnetcdf" ./configure --enable-parallel-tests --enable-extra-example-tests --enable-filter-testing --enable-pnetcdf --prefix=${NCDIR} \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O3" LDFLAGS="-L${H5DIR}/lib" ./configure --disable-dap --enable-pnetcdf --prefix=${NCDIR} \
     && make \
     && make install \
     && cd / \
@@ -151,7 +151,7 @@ RUN cd / \
     && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
     && export NCDIR=/usr \
     && export NFDIR=/usr \
-    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O1" LDFLAGS="-L${NCDIR}/lib -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2" LDFLAGS="-L${NCDIR}/lib -lnetcdf -lpnetcdf -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
     && make \
     && make install \
     && cd / \
@@ -159,22 +159,21 @@ RUN cd / \
     && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
 
 # install ADIOS
-RUN cd / \
-   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
-   && mkdir adios2-build && cd adios2-build \
-   && cmake ../ADIOS2 \
-   && make -j 4 \
-   && ctest \
-   && make install \
-   && rm -r ../ADIOS2 \
-   && cd / \
-   && rm -r adios2-build \
-   && cd /
-
+#RUN cd / \
+#   && git clone https://github.com/ornladios/ADIOS2.git ADIOS2 \
+#   && mkdir adios2-build && cd adios2-build \
+#   && cmake ../ADIOS2 \
+#   && make -j 4 \
+#   && ctest \
+#   && make install \
+#   && rm -r ../ADIOS2 \
+#   && cd / \
+#   && rm -r adios2-build \
+#   && cd /
 
 # Set some environment variables
 ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
 ENV NETCDF_C_PATH=/usr
 ENV NETCDF_FORTRAN_PATH=/usr
-
+ENV NETCDF_PATH=/usr
 ## EOF

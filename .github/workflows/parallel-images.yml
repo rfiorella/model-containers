@@ -61,7 +61,7 @@ jobs:
             --amend ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-amd64-latest
           docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-latest
 # these two can be emulated:
-  build-emulated-openmpi:
+  build-emulated-e3sm-openmpi:
     runs-on: ubuntu-latest
     if: success()
     needs: fix-manifest-openmpi
@@ -86,72 +86,11 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-openmpi-dev-latest
           platforms: linux/amd64, linux/arm64
           build-args: BASE_TAG=base-openmpi-latest
-      - name: build and push wrf image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./wrf/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-openmpi-latest
-          platforms: linux/amd64, linux/arm64
-          build-arg: BASE_TAG=base-openmpi-latest
 
-  ### MPICH
-  build-base-mpich:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, ubuntu-24.04-arm ]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-      - name: Get runner architecture
-        run: |
-          if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
-            echo "ARCH=arm64" >> $GITHUB_ENV
-          else
-            echo "ARCH=amd64" >> $GITHUB_ENV
-          fi
-      - name: login to docker hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push base ubuntu image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./base-ubuntu/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-mpich-${{ env.ARCH }}-latest
-          build-args: |
-            mpi_flavor=mpich
-            mpi_version=4.3.0
-  fix-manifest-mpich:
-    needs: build-base-mpich
+  build-emulated-wrf-openmpi:
     runs-on: ubuntu-latest
     if: success()
-    steps:
-      - name: Pull images
-        run: |
-          docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest
-          docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: Edit manifest
-        run: |
-          docker manifest create ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest \
-            --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest \
-            --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
-          docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest
-# these two can be emulated:
-  build-emulated-mpich:
-    runs-on: ubuntu-latest
-    if: success()
-    needs: fix-manifest-mpich
+    needs: fix-manifest-openmpi
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
@@ -164,21 +103,123 @@ jobs:
         with:
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
-      - name: build and push e3sm image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./e3sm-dev/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-mpich-dev-latest
-          platforms: linux/amd64, linux/arm64
-          build-args: BASE_TAG=base-mpich-latest
       - name: build and push wrf image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./wrf/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-mpich-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-openmpi-latest
           platforms: linux/amd64, linux/arm64
-          build-arg: BASE_TAG=base-mpich-latest
+          build-arg: BASE_TAG=base-openmpi-latest
+  build-emulated-wrf-tag-openmpi:
+    runs-on: ubuntu-latest
+    if: success()
+    needs: fix-manifest-openmpi
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+      - name: build and push wrf image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./wrf/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-tag-openmpi-latest
+          platforms: linux/amd64, linux/arm64
+          build-arg: BASE_TAG=base-openmpi-latest
+#   ### MPICH
+#   build-base-mpich:
+#     strategy:
+#       matrix:
+#         os: [ ubuntu-latest, ubuntu-24.04-arm ]
+#     runs-on: ${{ matrix.os }}
+#     steps:
+#       - name: checkout repo
+#         uses: actions/checkout@v4
+#       - name: Get runner architecture
+#         run: |
+#           if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
+#             echo "ARCH=arm64" >> $GITHUB_ENV
+#           else
+#             echo "ARCH=amd64" >> $GITHUB_ENV
+#           fi
+#       - name: login to docker hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Build and push base ubuntu image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: .
+#           file: ./base-ubuntu/Dockerfile
+#           push: true
+#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-mpich-${{ env.ARCH }}-latest
+#           build-args: |
+#             mpi_flavor=mpich
+#             mpi_version=4.3.0
+#   fix-manifest-mpich:
+#     needs: build-base-mpich
+#     runs-on: ubuntu-latest
+#     if: success()
+#     steps:
+#       - name: Pull images
+#         run: |
+#           docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest
+#           docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{secrets.DOCKER_USERNAME}}
+#           password: ${{secrets.DOCKER_PASSWORD}}
+#       - name: Edit manifest
+#         run: |
+#           docker manifest create ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest \
+#             --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest \
+#             --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
+#           docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest
+# # these two can be emulated:
+#   build-emulated-mpich:
+#     runs-on: ubuntu-latest
+#     if: success()
+#     needs: fix-manifest-mpich
+#     steps:
+#       - name: checkout repo
+#         uses: actions/checkout@v4
+#       - name: Setup QEMU
+#         uses: docker/setup-qemu-action@v3
+#       - name: Setup buildx
+#         uses: docker/setup-buildx-action@v3
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{secrets.DOCKER_USERNAME}}
+#           password: ${{secrets.DOCKER_PASSWORD}}
+#       - name: build and push e3sm image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: .
+#           file: ./e3sm-dev/Dockerfile
+#           push: true
+#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-mpich-dev-latest
+#           platforms: linux/amd64, linux/arm64
+#           build-args: BASE_TAG=base-mpich-latest
+#       - name: build and push wrf image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           file: ./wrf/Dockerfile
+#           push: true
+#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-mpich-latest
+#           platforms: linux/amd64, linux/arm64
+#           build-arg: BASE_TAG=base-mpich-latest
