@@ -111,7 +111,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-openmpi-latest
           platforms: linux/amd64, linux/arm64
-          build-arg: BASE_TAG=base-openmpi-latest
+          build-args: BASE_TAG=base-openmpi-latest
   build-emulated-wrf-tag-openmpi:
     runs-on: ubuntu-latest
     if: success()
@@ -136,7 +136,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-tag-openmpi-latest
           platforms: linux/amd64, linux/arm64
-          build-arg: BASE_TAG=base-openmpi-latest
+          build-args: BASE_TAG=base-openmpi-latest
 #   ### MPICH
 #   build-base-mpich:
 #     strategy:
