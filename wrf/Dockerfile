@@ -8,23 +8,23 @@
 ARG BASE_TAG=base-mpich-latest
 FROM rfiorella/model-containers:${BASE_TAG}
 
-ENV H5DIR=/usr/hdf5 \
-    HDF5=/usr/hdf5 \
-    PHDF5=/usr/hdf5 \
-    NCDIR=/usr/netcdf \
-    NETCDF=/usr/netcdf \
-    NFDIR=/usr/netcdf \
-    PNETCDF=/usr/pnetcdf \
-    JASPERINC=/usr/grib2/include \
-    JASPERLIB=/usr/grib2/lib \
-    PATH=/usr/grib2/bin:/usr/hdf5/bin:/usr/netcdf/bin:/usr/pnetcdf/bin:$PATH \
-    LD_LIBRARY_PATH=/usr/grib2/lib:/usr/hdf5/lib:/usr/netcdf/lib:/usr/pnetcdf/lib:$LD_LIBRARY_PATH
+ENV H5DIR=/usr \
+    HDF5=/usr \
+    PHDF5=/usr \
+    NCDIR=/usr/ \
+    NETCDF=/usr/ \
+    NFDIR=/usr/ \
+    PNETCDF=/usr/ \
+    JASPERINC=/usr/include \
+    JASPERLIB=/usr/lib \
+    PATH=/usr/bin:$PATH \
+    LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH
 
 # jasPER
 RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf zlib.tar.gz \
   && cd zlib-1.3.1 \
-  && ./configure --prefix=/usr/grib2 \
+  && ./configure --prefix=/usr \
   && make \
   && make install \
   && cd .. \
@@ -33,9 +33,9 @@ RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf libpng-1.2.50.tar.gz \
   && cd libpng-1.2.50 \
   && if [ `uname -i` = "aarch64" ] ; then \
-     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/grib2 ; \
+     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr ; \
     else \
-      ./configure --prefix=/usr/grib2 ; \
+      ./configure --prefix=/usr ; \
     fi \
   && make \
   && make install \
@@ -45,9 +45,9 @@ RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf jasper-1.900.1.tar.gz \
   && cd jasper-1.900.1 \
   && if [ `uname -i` = "aarch64" ] ; then \
-     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/grib2 ; \
+     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr ; \
     else \
-      ./configure --prefix=/usr/grib2 ; \
+      ./configure --prefix=/usr ; \
     fi \
   && make \
   && make install \
