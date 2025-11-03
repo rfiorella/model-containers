@@ -8,23 +8,23 @@
 ARG BASE_TAG=base-mpich-latest
 FROM rfiorella/model-containers:${BASE_TAG}
 
-ENV H5DIR=/usr/local/hdf5 \
-    HDF5=/usr/local/hdf5 \
-    PHDF5=/usr/local/hdf5 \
-    NCDIR=/usr/local/netcdf \
-    NETCDF=/usr/local/netcdf \
-    NFDIR=/usr/local/netcdf \
-    PNETCDF=/usr/local/pnetcdf \
-    JASPERINC=/usr/local/grib2/include \
-    JASPERLIB=/usr/local/grib2/lib \
-    PATH=/usr/local/grib2/bin:/usr/local/hdf5/bin:/usr/local/netcdf/bin:/usr/local/pnetcdf/bin:$PATH \
-    LD_LIBRARY_PATH=/usr/local/grib2/lib:/usr/local/hdf5/lib:/usr/local/netcdf/lib:/usr/local/pnetcdf/lib:$LD_LIBRARY_PATH
+ENV H5DIR=/usr/hdf5 \
+    HDF5=/usr/hdf5 \
+    PHDF5=/usr/hdf5 \
+    NCDIR=/usr/netcdf \
+    NETCDF=/usr/netcdf \
+    NFDIR=/usr/netcdf \
+    PNETCDF=/usr/pnetcdf \
+    JASPERINC=/usr/grib2/include \
+    JASPERLIB=/usr/grib2/lib \
+    PATH=/usr/grib2/bin:/usr/hdf5/bin:/usr/netcdf/bin:/usr/pnetcdf/bin:$PATH \
+    LD_LIBRARY_PATH=/usr/grib2/lib:/usr/hdf5/lib:/usr/netcdf/lib:/usr/pnetcdf/lib:$LD_LIBRARY_PATH
 
 # jasPER
 RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf zlib.tar.gz \
   && cd zlib-1.3.1 \
-  && ./configure --prefix=/usr/local/grib2 \
+  && ./configure --prefix=/usr/grib2 \
   && make \
   && make install \
   && cd .. \
@@ -33,9 +33,9 @@ RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf libpng-1.2.50.tar.gz \
   && cd libpng-1.2.50 \
   && if [ `uname -i` = "aarch64" ] ; then \
-     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/local/grib2 ; \
+     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/grib2 ; \
     else \
-      ./configure --prefix=/usr/local/grib2 ; \
+      ./configure --prefix=/usr/grib2 ; \
     fi \
   && make \
   && make install \
@@ -45,9 +45,9 @@ RUN wget https://www.zlib.net/current/zlib.tar.gz \
   && tar xzvf jasper-1.900.1.tar.gz \
   && cd jasper-1.900.1 \
   && if [ `uname -i` = "aarch64" ] ; then \
-     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/local/grib2 ; \
+     ./configure --build=aarch64-unknown-linux-gnu --prefix=/usr/grib2 ; \
     else \
-      ./configure --prefix=/usr/local/grib2 ; \
+      ./configure --prefix=/usr/grib2 ; \
     fi \
   && make \
   && make install \
@@ -69,4 +69,4 @@ RUN groupadd -r wrfuser \
     && chown -R wrfuser /home \
     && chgrp -R wrfuser /home
 USER wrfuser
-WORKDIR /home/
+WORKDIR /home/wrfuser/WRF
