@@ -44,4 +44,10 @@ ADD cime_files /home/$USER/.cime
 WORKDIR /home/$USER
 USER ${USER}
 RUN export USER=${USER}
+
+# Set the entrypoint script
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
+
 ### EOF
