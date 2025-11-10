@@ -43,5 +43,8 @@ ADD cime_files /home/$USER/.cime
 
 WORKDIR /home/$USER
 USER ${USER}
-RUN export USER=${USER}
+RUN export USER=${USER} \ 
+    && git config --global user.email "e3smuser@dev.null" \
+    && git config --global user.name "e3smuser"
+
 ### EOF
