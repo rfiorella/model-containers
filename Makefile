@@ -10,7 +10,7 @@ EAMv3-wiso:
 	docker run --rm -it -v /code/E3SM/EAMv3-wiso:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/eamv3:/home/e3smuser/output rfiorella/model-containers:e3sm-openmpi-dev-latest
 
 NGEE-master:
-	docker run --rm -it -v /code/E3SM/NGEE-master:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/ngee-master:/home/e3smuser/output -v /code/E3SM/OLMT:/home/e3smuser/OLMT rfiorella/model-containers:e3sm-openmpi-dev-latest
+	docker run --rm -it -v /code/E3SM/NGEE-Arctic-E3SM:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/ngee-master:/home/e3smuser/output -v /code/E3SM/OLMT:/home/e3smuser/OLMT rfiorella/model-containers:e3sm-openmpi-dev-latest
 
 NGEE-IM3-debug:
 	docker run --rm -it -v /code/E3SM/IM3:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/im3:/home/e3smuser/output -v /code/E3SM/OLMT:/home/e3smuser/OLMT rfiorella/model-containers:e3sm-openmpi-dev-latest
