@@ -26,6 +26,12 @@ RUN pip3 install --upgrade pip \
     && pip3 install cftime configparser \
     && pip3 install h5py
 
+## Install SPEL_OpenACC
+RUN \
+    git clone https://www.github.com/peterdschwartz/SPEL_OpenACC.git \
+    && pip install ./SPEL_OpenACC
+    && rm -rf SPEL_OpenACC
+
 USER root
 
 RUN cd / \
