@@ -2,7 +2,7 @@
 # Ubuntu container to build TPLs needed for various ESMs
 #------------------------------------------------------------------------
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
