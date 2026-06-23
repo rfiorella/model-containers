@@ -28,6 +28,17 @@ RUN pip3 install --upgrade pip \
 
 USER root
 
+# Build cprnc for baseline comparison
+RUN cd /tmp \
+    && git clone --depth 1 https://github.com/ESMCI/cprnc.git \
+    && cd cprnc \
+    && mkdir bld && cd bld \
+    && cmake ../ -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/cprnc
+
 RUN cd / \
     && mkdir -p /home/$USER/.cime \
     && mkdir -p /home/$USER/baselines/data \
