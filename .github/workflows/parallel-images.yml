@@ -143,8 +143,7 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
-          docker manifest create \
-            ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-${{ matrix.variant }} \
-            --amend ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-amd64-${{ matrix.variant }} \
-            --amend ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-arm64-${{ matrix.variant }}
-          docker manifest push ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-${{ matrix.variant }}
+          docker buildx imagetools create \
+            --tag ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-${{ matrix.variant }} \
+            ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-amd64-${{ matrix.variant }} \
+            ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-arm64-${{ matrix.variant }}
