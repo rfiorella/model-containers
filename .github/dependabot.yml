@@ -9,6 +9,6 @@ updates:
       action-updates:
         patterns:
           - "*"
-    assignee:
+    assignees:
       - "rfiorella"
   
