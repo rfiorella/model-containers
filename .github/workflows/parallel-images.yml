@@ -34,15 +34,12 @@ jobs:
         run: |
           case "${{ matrix.variant }}" in
             debug)
-              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
               echo "ARCH_FLAGS=-g -fPIC" >> $GITHUB_OUTPUT
               ;;
             v3-znver1)
-              echo "ARCH_LEVEL=x86-64-v3" >> $GITHUB_OUTPUT
               echo "ARCH_FLAGS=-march=x86-64-v3 -mtune=znver1" >> $GITHUB_OUTPUT
               ;;
             v4-znver4)
-              echo "ARCH_LEVEL=x86-64-v4" >> $GITHUB_OUTPUT
               echo "ARCH_FLAGS=-march=x86-64-v4 -mtune=znver4" >> $GITHUB_OUTPUT
               ;;
           esac
@@ -56,7 +53,6 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:base-ubuntu-amd64-${{ matrix.variant }}
           platforms: linux/amd64
           build-args: |
-            ARCH_LEVEL=${{ steps.flags.outputs.ARCH_LEVEL }}
             ARCH_FLAGS=${{ steps.flags.outputs.ARCH_FLAGS }}
             mpi_flavor=openmpi
             mpi_version=4.1.7
@@ -99,11 +95,9 @@ jobs:
         run: |
           case "${{ matrix.variant }}" in
             debug)
-              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
               echo "ARCH_FLAGS=-g -fPIC" >> $GITHUB_OUTPUT
               ;;
             apple-m-series)
-              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
               echo "ARCH_FLAGS=-mcpu=apple-m1" >> $GITHUB_OUTPUT
               ;;
           esac
@@ -117,7 +111,6 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:base-ubuntu-arm64-${{ matrix.variant }}
           platforms: linux/arm64
           build-args: |
-            ARCH_LEVEL=${{ steps.flags.outputs.ARCH_LEVEL }}
             ARCH_FLAGS=${{ steps.flags.outputs.ARCH_FLAGS }}
             mpi_flavor=openmpi
             mpi_version=4.1.7
