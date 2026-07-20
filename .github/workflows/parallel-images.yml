@@ -1,225 +1,161 @@
-name: Parallel Images
+# Build tuned containers optimized for different architectures
+name: Build tuned containers
 
 on:
   push:
-    branches: '**'
+    branches: [main]
+  workflow_dispatch:
 
 env:
   REGISTRY: docker.io
   IMAGE_OWNER: rfiorella
 
 jobs:
-  ####OPENMPI
-  build-base-openmpi:
+  # Build x86-64 variants on native runners
+  build-x86-variants:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest, ubuntu-24.04-arm ]
-    runs-on: ${{ matrix.os }}
+        variant: [debug, v3-znver1, v4-znver4]
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-      - name: Get runner architecture
-        run: |
-          if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
-            echo "ARCH=arm64" >> $GITHUB_ENV
-          else
-            echo "ARCH=amd64" >> $GITHUB_ENV
-          fi
-      - name: login to docker hub
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push base ubuntu image
+
+      - name: Set compiler flags for variant
+        id: flags
+        run: |
+          case "${{ matrix.variant }}" in
+            debug)
+              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
+              echo "ARCH_FLAGS=-g -fPIC" >> $GITHUB_OUTPUT
+              ;;
+            v3-znver1)
+              echo "ARCH_LEVEL=x86-64-v3" >> $GITHUB_OUTPUT
+              echo "ARCH_FLAGS=-march=x86-64-v3 -mtune=znver1" >> $GITHUB_OUTPUT
+              ;;
+            v4-znver4)
+              echo "ARCH_LEVEL=x86-64-v4" >> $GITHUB_OUTPUT
+              echo "ARCH_FLAGS=-march=x86-64-v4 -mtune=znver4" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Build and push base-ubuntu (x86)
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./base-ubuntu/Dockerfile
+          context: ./base-ubuntu
+          file: ./base-ubuntu/Dockerfile.tuned
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-${{ env.ARCH }}-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:base-ubuntu-amd64-${{ matrix.variant }}
+          platforms: linux/amd64
           build-args: |
+            ARCH_LEVEL=${{ steps.flags.outputs.ARCH_LEVEL }}
+            ARCH_FLAGS=${{ steps.flags.outputs.ARCH_FLAGS }}
             mpi_flavor=openmpi
             mpi_version=4.1.7
-  fix-manifest-openmpi:
-    needs: build-base-openmpi
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - name: Pull images
-        run: |
-          docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-arm64-latest
-          docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-amd64-latest
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: Edit manifest
-        run: |
-          docker manifest create ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-latest \
-            --amend ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-arm64-latest \
-            --amend ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-amd64-latest
-          docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:base-openmpi-latest
-# these two can be emulated:
-  build-emulated-e3sm-openmpi:
-    runs-on: ubuntu-latest
-    if: success()
-    needs: fix-manifest-openmpi
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Setup buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: build and push e3sm image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push e3sm-dev (x86)
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./e3sm-dev/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-openmpi-dev-latest
-          platforms: linux/amd64, linux/arm64
-          build-args: BASE_TAG=base-openmpi-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:e3sm-dev-amd64-${{ matrix.variant }}
+          platforms: linux/amd64
+          build-args: |
+            BASE_TAG=base-ubuntu-amd64-${{ matrix.variant }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-  build-emulated-wrf-openmpi:
-    runs-on: ubuntu-latest
-    if: success()
-    needs: fix-manifest-openmpi
+  # Build ARM variants on native ARM runners
+  build-arm-variants:
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      matrix:
+        variant: [debug, apple-m-series]
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Setup buildx
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: build and push wrf image
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set compiler flags for variant
+        id: flags
+        run: |
+          case "${{ matrix.variant }}" in
+            debug)
+              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
+              echo "ARCH_FLAGS=-g -fPIC" >> $GITHUB_OUTPUT
+              ;;
+            apple-m-series)
+              echo "ARCH_LEVEL=" >> $GITHUB_OUTPUT
+              echo "ARCH_FLAGS=-mcpu=apple-m1" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Build and push base-ubuntu (ARM)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./base-ubuntu
+          file: ./base-ubuntu/Dockerfile.tuned
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:base-ubuntu-arm64-${{ matrix.variant }}
+          platforms: linux/arm64
+          build-args: |
+            ARCH_LEVEL=${{ steps.flags.outputs.ARCH_LEVEL }}
+            ARCH_FLAGS=${{ steps.flags.outputs.ARCH_FLAGS }}
+            mpi_flavor=openmpi
+            mpi_version=4.1.7
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push e3sm-dev (ARM)
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./wrf/Dockerfile
+          file: ./e3sm-dev/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-openmpi-latest
-          platforms: linux/amd64, linux/arm64
-          build-args: BASE_TAG=base-openmpi-latest
-  build-emulated-wrf-tag-openmpi:
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/model-containers:e3sm-dev-arm64-${{ matrix.variant }}
+          platforms: linux/arm64
+          build-args: |
+            BASE_TAG=base-ubuntu-arm64-${{ matrix.variant }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Create multi-arch manifests for each variant
+  create-manifests:
+    needs: [build-x86-variants, build-arm-variants]
     runs-on: ubuntu-latest
-    if: success()
-    needs: fix-manifest-openmpi
+    strategy:
+      matrix:
+        variant: [debug]
+        container: [base-ubuntu, e3sm-dev]
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v4
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Setup buildx
-        uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-      - name: build and push wrf image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./wrf/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-tag-openmpi-latest
-          platforms: linux/amd64, linux/arm64
-          build-args: BASE_TAG=base-openmpi-latest
-#   ### MPICH
-#   build-base-mpich:
-#     strategy:
-#       matrix:
-#         os: [ ubuntu-latest, ubuntu-24.04-arm ]
-#     runs-on: ${{ matrix.os }}
-#     steps:
-#       - name: checkout repo
-#         uses: actions/checkout@v4
-#       - name: Get runner architecture
-#         run: |
-#           if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
-#             echo "ARCH=arm64" >> $GITHUB_ENV
-#           else
-#             echo "ARCH=amd64" >> $GITHUB_ENV
-#           fi
-#       - name: login to docker hub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{ secrets.DOCKER_USERNAME }}
-#           password: ${{ secrets.DOCKER_PASSWORD }}
-#       - name: Build and push base ubuntu image
-#         uses: docker/build-push-action@v6
-#         with:
-#           context: .
-#           file: ./base-ubuntu/Dockerfile
-#           push: true
-#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:base-mpich-${{ env.ARCH }}-latest
-#           build-args: |
-#             mpi_flavor=mpich
-#             mpi_version=4.3.0
-#   fix-manifest-mpich:
-#     needs: build-base-mpich
-#     runs-on: ubuntu-latest
-#     if: success()
-#     steps:
-#       - name: Pull images
-#         run: |
-#           docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest
-#           docker pull ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
-#       - name: Login to Docker Hub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{secrets.DOCKER_USERNAME}}
-#           password: ${{secrets.DOCKER_PASSWORD}}
-#       - name: Edit manifest
-#         run: |
-#           docker manifest create ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest \
-#             --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-arm64-latest \
-#             --amend ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-amd64-latest
-#           docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:base-mpich-latest
-# # these two can be emulated:
-#   build-emulated-mpich:
-#     runs-on: ubuntu-latest
-#     if: success()
-#     needs: fix-manifest-mpich
-#     steps:
-#       - name: checkout repo
-#         uses: actions/checkout@v4
-#       - name: Setup QEMU
-#         uses: docker/setup-qemu-action@v3
-#       - name: Setup buildx
-#         uses: docker/setup-buildx-action@v3
-#       - name: Login to Docker Hub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{secrets.DOCKER_USERNAME}}
-#           password: ${{secrets.DOCKER_PASSWORD}}
-#       - name: build and push e3sm image
-#         uses: docker/build-push-action@v6
-#         with:
-#           context: .
-#           file: ./e3sm-dev/Dockerfile
-#           push: true
-#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-mpich-dev-latest
-#           platforms: linux/amd64, linux/arm64
-#           build-args: BASE_TAG=base-mpich-latest
-#       - name: build and push wrf image
-#         uses: docker/build-push-action@v5
-#         with:
-#           context: .
-#           file: ./wrf/Dockerfile
-#           push: true
-#           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:wrf-mpich-latest
-#           platforms: linux/amd64, linux/arm64
-#           build-arg: BASE_TAG=base-mpich-latest
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Create and push multi-arch manifest
+        run: |
+          docker manifest create \
+            ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-${{ matrix.variant }} \
+            --amend ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-amd64-${{ matrix.variant }} \
+            --amend ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-arm64-${{ matrix.variant }}
+          docker manifest push ${{ env.IMAGE_OWNER }}/model-containers:${{ matrix.container }}-${{ matrix.variant }}
