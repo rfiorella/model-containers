@@ -1,0 +1,185 @@
+# ----------------------------------------------------------------------
+# Ubuntu container to build TPLs needed for various ESMs
+# WITH MICROARCHITECTURE TUNING SUPPORT
+#------------------------------------------------------------------------
+
+FROM ubuntu:jammy
+
+# Set a few variables that can be used to control the docker build
+ARG HDF5_VERSION=1.14.6
+ARG NETCDF_VERSION=4.9.2
+ARG NETCDF_FORTRAN_VERSION=4.6.2
+ARG build_mpi=False
+ARG mpi_flavor=openmpi
+ARG mpi_version=4.1.6
+
+# NEW: Architecture tuning arguments
+# Pass compiler flags directly via ARCH_FLAGS
+# Examples:
+#   - "-g -fPIC" (debug build)
+#   - "-march=x86-64-v3 -mtune=znver1" (AVX2+FMA, optimized for AMD Zen1)
+#   - "-march=x86-64-v4 -mtune=znver4" (AVX-512, optimized for AMD Zen4)
+#   - "-mcpu=apple-m1" (ARM, optimized for Apple M-series)
+ARG ARCH_FLAGS=""
+
+# Save architecture flags for later build steps
+RUN echo "Building with architecture flags: ${ARCH_FLAGS}" && \
+    echo "export ARCH_FLAGS=\"${ARCH_FLAGS}\"" > /etc/profile.d/arch_flags.sh
+
+# Update the system and install initial dependencies
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
+    && apt-get update -y \
+    && apt-get upgrade -y && apt-get install -y tzdata \
+    && apt-get install -y \
+    cmake \
+    git \
+    gcc \
+    cpp \
+    gfortran \
+    expat \
+    subversion \
+    bzip2 \
+    unzip \
+    libgmp3-dev \
+    m4 \
+    autoconf \
+    automake \
+    libtool \
+    wget \
+    libcurl4-openssl-dev \
+    zlib1g-dev \
+    libzstd-dev \
+    libncurses5-dev \
+    csh \
+    liblapack-dev \
+    libblas-dev \
+    libevent-dev \
+    libffi7 \
+    libffi-dev \
+    libhwloc-dev \
+    libxml-libxml-perl \
+    libxml2-utils \
+    libxml2 \
+    libxml2-dev \
+    libswitch-perl \
+    vim \
+    libudunits2-0 \
+    libudunits2-dev \
+    udunits-bin \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python-is-python3 \
+    apt-utils \
+    ftp \
+    apt-transport-https \
+    libssl-dev \
+    openssl \
+    libncurses5-dev \
+    gsl-bin \
+    libgsl-dev \
+    flex \
+    nco \
+    ncview \
+    locales \
+    gdb \
+    valgrind \
+    jq \
+    # install MPI
+    && if [ "$build_mpi" = "True" ]; then \
+      if [ "$mpi_flavor" = "mpich" ]; then cd / \
+        && wget https://www.mpich.org/static/downloads/${mpi_version}/mpich-${mpi_version}.tar.gz \
+        && tar xvf mpich-${mpi_version}.tar.gz \
+        && cd mpich-${mpi_version} \
+        && . /etc/profile.d/arch_flags.sh \
+        && CFLAGS="-O3 ${ARCH_FLAGS}" FFLAGS="-O3 ${ARCH_FLAGS}" ./configure --enable-shared --with-device=ch3:sock --enable-fast=all,Os --prefix=/usr \
+        && make \
+        && make install \
+        && cd ../ \
+        && rm -r mpich-${mpi_version}/ \
+        && rm mpich-${mpi_version}.tar.gz ; \
+      elif [ "$mpi_flavor" = "openmpi" ]; then cd / \
+        && export mpi_version_major=`echo ${mpi_version} | cut -c1-3` && echo $mpi_version_major \
+        && wget https://download.open-mpi.org/release/open-mpi/v${mpi_version_major}/openmpi-${mpi_version}.tar.gz \
+        && tar xvf openmpi-${mpi_version}.tar.gz \
+        && cd openmpi-${mpi_version} \
+        && . /etc/profile.d/arch_flags.sh \
+        && CFLAGS="-O3 ${ARCH_FLAGS}" FFLAGS="-O3 ${ARCH_FLAGS}" ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all \
+        && make \
+        && make install \
+        && cd ../ ; \
+      else \
+        echo "Unknown mpi_flavor - exiting." \
+        && exit 1 ; \
+      fi \
+    else apt-get install -y lib${mpi_flavor}-dev ; fi \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean all \
+    && apt autoremove
+
+## Set default locale for the environment
+ENV LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+
+ENV FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')"
+
+## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
+# Apply architecture tuning here
+RUN . /etc/profile.d/arch_flags.sh && \
+    which mpicc && which mpifort \
+    && cd / \
+    && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
+    && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
+    && cd hdf5-${HDF5_VERSION} \
+    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3 ${ARCH_FLAGS}" FFLAGS="${FIXED_FLAGS} ${ARCH_FLAGS}" ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r hdf5-${HDF5_VERSION} \
+    && rm hdf5-${HDF5_VERSION}.tar.gz
+
+## PnetCDF
+RUN . /etc/profile.d/arch_flags.sh && \
+    cd / \
+   && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
+   && cd PnetCDF \
+   && autoreconf -i \
+   && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2 ${ARCH_FLAGS}" ./configure --disable-in-place-swap --prefix=/usr/ \
+   && make \
+   && make install \
+   && cd / \
+   && rm -r PnetCDF/
+
+## netCDF
+RUN . /etc/profile.d/arch_flags.sh && \
+    cd / \
+    && wget https://downloads.unidata.ucar.edu/netcdf-c/${NETCDF_VERSION}/netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && tar -zxvf netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && cd netcdf-c-${NETCDF_VERSION} \
+    && export H5DIR=/usr \
+    && export NCDIR=/usr \
+    && CC=mpicc CPPFLAGS="-I${H5DIR}/include -fPIC -O3 ${ARCH_FLAGS}" LDFLAGS="-L${H5DIR}/lib" ./configure --disable-dap --enable-pnetcdf --prefix=${NCDIR} \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r netcdf-c-${NETCDF_VERSION} \
+    && rm netcdf-c-${NETCDF_VERSION}.tar.gz \
+    && wget https://downloads.unidata.ucar.edu/netcdf-fortran/${NETCDF_FORTRAN_VERSION}/netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
+    && tar -zxvf netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz \
+    && cd netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
+    && export NCDIR=/usr \
+    && export NFDIR=/usr \
+    && FC=mpifort CC=mpicc CPPFLAGS="-I${NCDIR}/include -I${H5DIR}/include -fPIC -O2 ${ARCH_FLAGS}" LDFLAGS="-L${NCDIR}/lib -lnetcdf -lpnetcdf -L${H5DIR}/lib" ./configure --prefix=${NFDIR} --enable-parallel-tests \
+    && make \
+    && make install \
+    && cd / \
+    && rm -r netcdf-fortran-${NETCDF_FORTRAN_VERSION} \
+    && rm netcdf-fortran-${NETCDF_FORTRAN_VERSION}.tar.gz
+
+# Set some environment variables
+ENV LD_LIBRARY_PATH=/usr/lib:/usr/lib/aarch64-linux-gnu
+ENV NETCDF_C_PATH=/usr
+ENV NETCDF_FORTRAN_PATH=/usr
+ENV NETCDF_PATH=/usr
+## EOF
