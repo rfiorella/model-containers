@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
-        variant: [debug, apple-m-series]
+        variant: [debug, generic]
     steps:
       - uses: actions/checkout@v4
 
@@ -97,8 +97,8 @@ jobs:
             debug)
               echo "ARCH_FLAGS=-g -fPIC" >> $GITHUB_OUTPUT
               ;;
-            apple-m-series)
-              echo "ARCH_FLAGS=-mcpu=apple-m1" >> $GITHUB_OUTPUT
+            generic)
+              echo "ARCH_FLAGS=-O3 -fPIC" >> $GITHUB_OUTPUT
               ;;
           esac
 
