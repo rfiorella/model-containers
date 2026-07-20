@@ -121,17 +121,16 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US.UTF-8
 
-ENV FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')"
-
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 # Apply architecture tuning here
 RUN . /etc/profile.d/arch_flags.sh && \
     which mpicc && which mpifort \
+    && export FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')" \
     && cd / \
     && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3 ${ARCH_FLAGS}" FFLAGS="${FIXED_FLAGS} ${ARCH_FLAGS}" ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && CC=mpicc FC=mpifort CFLAGS="-O3 ${ARCH_FLAGS}" FCFLAGS="-O3 ${ARCH_FLAGS}" CPPFLAGS="-fPIC" ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \

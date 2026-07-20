@@ -30,7 +30,7 @@ case "$VARIANT" in
         echo "⚠️  Warning: This image requires AVX-512 support"
         ;;
     apple-m-series)
-        ARCH_FLAGS="-mcpu=apple-m1"
+        ARCH_FLAGS="-march=armv8.2-a+fp16+rcpc+dotprod+crypto -mtune=neoverse-v2"
         TAG_SUFFIX="-apple-m-series"
         echo "Building for Apple M-series (ARM)"
         echo "⚠️  Warning: This is an ARM image"
