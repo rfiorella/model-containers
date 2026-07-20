@@ -49,12 +49,12 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libcurl4-openssl-dev \
     zlib1g-dev \
     libzstd-dev \
-    libncurses5-dev \
+    libncurses-dev \
     csh \
     liblapack-dev \
     libblas-dev \
     libevent-dev \
-    libffi7 \
+    libffi8 \
     libffi-dev \
     libhwloc-dev \
     libxml-libxml-perl \
@@ -75,7 +75,6 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     apt-transport-https \
     libssl-dev \
     openssl \
-    libncurses5-dev \
     gsl-bin \
     libgsl-dev \
     flex \
