@@ -2,7 +2,7 @@
 # Debian baseOS docker container to use with ELM/CTSM builds
 # ----------------------------------------------------------------------
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
@@ -35,12 +35,13 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     wget \
     libcurl4-openssl-dev \
     zlib1g-dev \
-    libncurses5-dev \
+    libzstd-dev \
+    libncurses-dev \
     csh \
     liblapack-dev \
     libblas-dev \
     libevent-dev \
-    libffi7 \
+    libffi8 \
     libffi-dev \
     libhwloc-dev \
     libxml-libxml-perl \
@@ -61,7 +62,6 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     apt-transport-https \
     libssl-dev \
     openssl \
-    libncurses5-dev \
     gsl-bin \
     libgsl-dev \
     flex \

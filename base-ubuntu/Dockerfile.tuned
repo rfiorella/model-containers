@@ -3,7 +3,7 @@
 # WITH MICROARCHITECTURE TUNING SUPPORT
 #------------------------------------------------------------------------
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
@@ -11,7 +11,7 @@ ARG NETCDF_VERSION=4.9.2
 ARG NETCDF_FORTRAN_VERSION=4.6.2
 ARG build_mpi=False
 ARG mpi_flavor=openmpi
-ARG mpi_version=4.1.6
+ARG mpi_version=4.1.7
 
 # NEW: Architecture tuning arguments
 # Pass compiler flags directly via ARCH_FLAGS
@@ -49,12 +49,12 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libcurl4-openssl-dev \
     zlib1g-dev \
     libzstd-dev \
-    libncurses5-dev \
+    libncurses-dev \
     csh \
     liblapack-dev \
     libblas-dev \
     libevent-dev \
-    libffi7 \
+    libffi8 \
     libffi-dev \
     libhwloc-dev \
     libxml-libxml-perl \
@@ -75,7 +75,6 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     apt-transport-https \
     libssl-dev \
     openssl \
-    libncurses5-dev \
     gsl-bin \
     libgsl-dev \
     flex \
@@ -122,17 +121,16 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US.UTF-8
 
-ENV FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')"
-
 ## HDF5 - use alternative source since main HDF5 source doesnt have useful download links
 # Apply architecture tuning here
 RUN . /etc/profile.d/arch_flags.sh && \
     which mpicc && which mpifort \
+    && export FIXED_FLAGS="$(mpifort --showme:compile | sed 's|-I/usr/lib|-I/usr/include|g')" \
     && cd / \
     && wget https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-${HDF5_VERSION}.tar.gz \
     && tar -zxvf hdf5-${HDF5_VERSION}.tar.gz \
     && cd hdf5-${HDF5_VERSION} \
-    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O3 ${ARCH_FLAGS}" FFLAGS="${FIXED_FLAGS} ${ARCH_FLAGS}" ./configure --enable-fortran --enable-parallel --prefix=/usr \
+    && CC=mpicc FC=mpifort CFLAGS="-O3 ${ARCH_FLAGS}" FCFLAGS="-O3 ${ARCH_FLAGS}" CPPFLAGS="-fPIC" ./configure --enable-fortran --enable-parallel --prefix=/usr \
     && make \
     && make install \
     && cd / \
