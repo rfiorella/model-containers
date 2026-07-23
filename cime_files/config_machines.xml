@@ -31,10 +31,14 @@
 	      <executable>mpirun</executable>
 	      <arguments>
 	            <arg name="num_tasks"> -np {{ total_tasks }}</arg>
+	            <arg name="bind_to"> --bind-to core</arg>
+	            <arg name="map_by"> --map-by numa</arg>
 	      </arguments>
       </mpirun>
       <module_system type="none"/>
       <environment_variables>
+        <env name="OMPI_MCA_hwloc_base_binding_policy">core</env>
+        <env name="OMPI_MCA_rmaps_base_mapping_policy">numa</env>
         <env name="HDF5_HOME">/usr</env>
         <env name="NETCDF_PATH">/usr</env>
         <env name="NETCDF_C_PATH">/usr</env>
@@ -72,10 +76,14 @@
 	      <executable>mpirun</executable>
 	      <arguments>
 	            <arg name="num_tasks"> -np {{ total_tasks }}</arg>
+	            <arg name="bind_to"> --bind-to core</arg>
+	            <arg name="map_by"> --map-by numa</arg>
 	      </arguments>
       </mpirun>
       <module_system type="none"/>
       <environment_variables>
+        <env name="OMPI_MCA_hwloc_base_binding_policy">core</env>
+        <env name="OMPI_MCA_rmaps_base_mapping_policy">numa</env>
         <env name="HDF5_HOME">/home/$USER/install/tpls</env>
         <env name="NETCDF_PATH">/home/$USER/install/tpls</env>
         <env name="NETCDF_C_PATH">/home/$USER/install/tpls</env>
