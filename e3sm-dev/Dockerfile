@@ -66,15 +66,18 @@ RUN cd /tmp \
     && rm -rf Zoltan-3.901 zoltan.tar.gz
 
 # Build TempestRemap for MOAB remapping.
-# MOAB 5.6.0's --download-tempestremap installs its test scripts to
-# $prefix/bin/test/ (nobase_dist_bin_SCRIPTS), so with --prefix=/usr the install
-# runs "mkdir -p /usr/bin/test/" which collides with the coreutils `test` binary
-# already at /usr/bin/test ("cannot create directory '/usr/bin/test/': File
-# exists"). Build TempestRemap standalone under /usr/local (no bin/test there)
-# and point MOAB at it via --with-tempestremap below.
+# MOAB 5.6.0's --download-tempestremap pulls the TempestRemap master branch and
+# installs its test scripts to $prefix/bin/test/ (nobase_dist_bin_SCRIPTS), so
+# with --prefix=/usr the install runs "mkdir -p /usr/bin/test/" which collides
+# with the coreutils `test` binary already at /usr/bin/test ("cannot create
+# directory '/usr/bin/test/': File exists"). Build the same master branch
+# standalone under /usr/local (no bin/test there) and point MOAB at it via
+# --with-tempestremap below. Pin the master commit for reproducibility; bump it
+# to match whatever MOAB's --download-tempestremap would currently fetch.
 RUN cd /tmp \
-    && git clone --depth 1 --branch v2.2.0 https://github.com/ClimateGlobalChange/tempestremap.git \
+    && git clone https://github.com/ClimateGlobalChange/tempestremap.git \
     && cd tempestremap \
+    && git checkout 641d5b2563f0abd0ac1dda6f8525ebac80f3b0fc \
     && autoreconf -fi \
     && ./configure CC=mpicc \
                    CXX=mpicxx \
@@ -108,7 +111,7 @@ RUN cd /tmp \
                     --with-zoltan=/usr \
     && make -j4 \
     && export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-    && { make check || { echo "==== MOAB test-suite logs ===="; cat tools/mbcoupler/parcoupler_test.log tools/mbcoupler/test-suite.log 2>/dev/null; exit 1; }; } \
+    && { make check || { echo "==== MOAB test-suite logs ===="; find . -name test-suite.log -exec cat {} +; exit 1; }; } \
     && make install \
     && cd / \
     && rm -rf /tmp/moab
