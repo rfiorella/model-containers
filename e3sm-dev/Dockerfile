@@ -107,7 +107,7 @@ RUN cd /tmp \
                     --with-tempestremap=/usr/local \
                     --with-zoltan=/usr \
     && make -j4 \
-    && make check \
+    && { make check || { echo "==== MOAB test-suite logs ===="; cat tools/mbcoupler/parcoupler_test.log tools/mbcoupler/test-suite.log 2>/dev/null; exit 1; }; } \
     && make install \
     && cd / \
     && rm -rf /tmp/moab
