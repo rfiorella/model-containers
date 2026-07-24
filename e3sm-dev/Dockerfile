@@ -65,6 +65,28 @@ RUN cd /tmp \
     && cd /tmp \
     && rm -rf Zoltan-3.901 zoltan.tar.gz
 
+# Build TempestRemap for MOAB remapping.
+# MOAB 5.6.0's --download-tempestremap installs its test scripts to
+# $prefix/bin/test/ (nobase_dist_bin_SCRIPTS), so with --prefix=/usr the install
+# runs "mkdir -p /usr/bin/test/" which collides with the coreutils `test` binary
+# already at /usr/bin/test ("cannot create directory '/usr/bin/test/': File
+# exists"). Build TempestRemap standalone under /usr/local (no bin/test there)
+# and point MOAB at it via --with-tempestremap below.
+RUN cd /tmp \
+    && git clone --depth 1 --branch v2.2.0 https://github.com/ClimateGlobalChange/tempestremap.git \
+    && cd tempestremap \
+    && autoreconf -fi \
+    && ./configure CC=mpicc \
+                   CXX=mpicxx \
+                   FC=mpif90 \
+                   F77=mpif77 \
+                   --prefix=/usr/local \
+                   --with-netcdf=/usr \
+    && make -j4 \
+    && make install \
+    && cd /tmp \
+    && rm -rf tempestremap
+
 # Build MOAB for coupling infrastructure
 RUN cd /tmp \
     && git clone https://bitbucket.org/fathomteam/moab.git \
@@ -82,7 +104,7 @@ RUN cd /tmp \
                     --with-netcdf=/usr \
                     --with-pnetcdf=/usr \
                     --download-eigen3 \
-                    --download-tempestremap \
+                    --with-tempestremap=/usr/local \
                     --with-zoltan=/usr \
     && make -j4 \
     && make check \
