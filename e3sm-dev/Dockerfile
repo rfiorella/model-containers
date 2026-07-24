@@ -33,11 +33,37 @@ RUN cd /tmp \
     && git clone --depth 1 https://github.com/ESMCI/cprnc.git \
     && cd cprnc \
     && mkdir bld && cd bld \
-    && cmake ../ -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake ../ -DCMAKE_INSTALL_PREFIX=/usr \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/cprnc
+    && rm -rf /tmp/cprnc \
+    && which cprnc
+
+# Build MOAB for coupling infrastructure
+RUN cd /tmp \
+    && git clone https://bitbucket.org/fathomteam/moab.git \
+    && cd moab \
+    && git checkout 5.6.0 \
+    && autoreconf -fi \
+    && ./configure CC=mpicc \
+                    CXX=mpicxx \
+                    FC=mpif90 \
+                    F77=mpif77 \
+                    --prefix=/usr \
+                    --enable-debug --enable-optimize \
+                    --with-mpi=/usr \
+                    --with-hdf5=/usr \
+                    --with-netcdf=/usr \
+                    --with-pnetcdf=/usr \
+                    --download-eigen3 \
+                    --download-tempestremap \
+                    --download-zoltan \
+    && make -j4 \
+    && make check \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/moab
 
 RUN cd / \
     && mkdir -p /home/$USER/.cime \
