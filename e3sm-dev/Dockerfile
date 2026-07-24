@@ -40,6 +40,31 @@ RUN cd /tmp \
     && rm -rf /tmp/cprnc \
     && which cprnc
 
+# Build Zoltan for MOAB partitioning.
+# MOAB 5.6.0's --download-zoltan ships a stale config.guess/config.sub that
+# cannot detect aarch64 ("configure: error: cannot guess build type") when the
+# image is built natively on arm64 (e.g. Apple Silicon). Build Zoltan
+# standalone and refresh its config scripts with autoreconf -fi so it
+# recognizes the host, then point MOAB at it via --with-zoltan below.
+RUN cd /tmp \
+    && wget -q https://github.com/sandialabs/Zoltan/archive/refs/tags/v3.901.tar.gz -O zoltan.tar.gz \
+    && tar xf zoltan.tar.gz \
+    && cd Zoltan-3.901 \
+    && autoreconf -fi \
+    && mkdir build \
+    && cd build \
+    && ../configure CC=mpicc \
+                    CXX=mpicxx \
+                    FC=mpif90 \
+                    F77=mpif77 \
+                    --prefix=/usr \
+                    --enable-mpi \
+                    --with-mpi-compilers=yes \
+    && make -j4 everything \
+    && make install \
+    && cd /tmp \
+    && rm -rf Zoltan-3.901 zoltan.tar.gz
+
 # Build MOAB for coupling infrastructure
 RUN cd /tmp \
     && git clone https://bitbucket.org/fathomteam/moab.git \
@@ -58,7 +83,7 @@ RUN cd /tmp \
                     --with-pnetcdf=/usr \
                     --download-eigen3 \
                     --download-tempestremap \
-                    --download-zoltan \
+                    --with-zoltan=/usr \
     && make -j4 \
     && make check \
     && make install \
