@@ -107,6 +107,7 @@ RUN cd /tmp \
                     --with-tempestremap=/usr/local \
                     --with-zoltan=/usr \
     && make -j4 \
+    && export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
     && { make check || { echo "==== MOAB test-suite logs ===="; cat tools/mbcoupler/parcoupler_test.log tools/mbcoupler/test-suite.log 2>/dev/null; exit 1; }; } \
     && make install \
     && cd / \
