@@ -13,3 +13,4 @@ string(APPEND SLIBS " -L$ENV{HDF5_HOME}/lib -lhdf5_fortran -lhdf5 -lhdf5_hl -lhd
 string(APPEND SLIBS " -L$ENV{NETCDF_PATH}/lib/ -lnetcdff -lnetcdf -lcurl -lblas -llapack")
 set(HDF5_PATH "$ENV{HDF5_HOME}")
 set(NETCDF_PATH "$ENV{NETCDF_PATH}")
+set(MOAB_DIR "$ENV{MOAB_DIR}")
