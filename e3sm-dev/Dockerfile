@@ -110,7 +110,7 @@ RUN cd /tmp \
                     FC=mpif90 \
                     F77=mpif77 \
                     --prefix=/usr \
-                    --enable-debug --enable-optimize \
+                    --enable-optimize \
                     --with-mpi=/usr \
                     --with-hdf5=/usr \
                     --with-netcdf=/usr \
