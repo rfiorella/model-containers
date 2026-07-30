@@ -127,7 +127,7 @@ RUN cd / \
    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
    && cd PnetCDF \
    && autoreconf -i \
-   && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --disable-in-place-swap --prefix=/usr/ \
+   && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2" ./configure --enable-shared --disable-in-place-swap --prefix=/usr/ \
    && make \
    && make install \
    && cd / \
