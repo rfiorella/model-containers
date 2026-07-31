@@ -43,6 +43,7 @@
         <env name="NETCDF_PATH">/usr</env>
         <env name="NETCDF_C_PATH">/usr</env>
         <env name="NETCDF_FORTRAN_PATH">/usr</env>
+        <env name="PNETCDF_PATH">/usr</env>
         <env name="MOAB_DIR">/usr</env>
       </environment_variables>
    </machine>
@@ -89,6 +90,7 @@
         <env name="NETCDF_PATH">/home/$USER/install/tpls</env>
         <env name="NETCDF_C_PATH">/home/$USER/install/tpls</env>
         <env name="NETCDF_FORTRAN_PATH">/home/$USER/install/tpls</env>
+        <env name="PNETCDF_PATH">/home/$USER/install/tpls</env>
       </environment_variables>
    </machine>
 </config_machines>
