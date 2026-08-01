@@ -15,7 +15,8 @@
       <DIN_LOC_ROOT_CLMFORC>/home/$USER/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
       <DOUT_S_ROOT>$CIME_OUTPUT_ROOT/archive/$CASE</DOUT_S_ROOT>
       <BASELINE_ROOT>/home/$USER/baselines</BASELINE_ROOT>
-      <CCSM_CPRNC>/home/$USER/tools/cprnc</CCSM_CPRNC>
+      <!-- cprnc is installed to /usr/bin by e3sm-dev/Dockerfile (CMAKE_INSTALL_PREFIX=/usr) -->
+      <CCSM_CPRNC>/usr/bin/cprnc</CCSM_CPRNC>
       <GMAKE>make</GMAKE>
       <GMAKE_J>4</GMAKE_J>
       <BATCH_SYSTEM>none</BATCH_SYSTEM>
