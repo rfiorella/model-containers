@@ -1,4 +1,4 @@
-.PHONY: EAMXX-wiso EAMv2-wiso EAMv3-wiso NGEE-master NGEE-IM3-debug NGEE-IM2-debug NGEE-IM1-debug ELM-ATS ELM-ATS-debug interface
+.PHONY: EAMXX-wiso EAMv2-wiso EAMv3-wiso NGEE-master NGEE-IM3-debug NGEE-IM2-debug NGEE-IM1-debug ELM-ATS ELM-ATS-debug interface aurora-cpu aurora-cuda
 
 EAMXX-wiso:
 	docker run --rm -it -v /code/build-models/eamxx:/home/e3smuser/scripts -v /data/scream/baselines:/home/e3smuser/baselines -v /code/E3SM/EAMxx-wiso:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/scream/output:/home/e3smuser/output rfiorella/model-containers:e3sm-openmpi-dev-latest
@@ -29,3 +29,9 @@ ELM-ATS-debug:
 
 interface:
 	docker run --rm -it -v /code/E3SM/interface-lakes:/home/e3smuser/E3SM -v /Volumes/neon_e3sm/inputdata:/home/e3smuser/inputdata -v /data/interface:/home/e3smuser/output -v /code/E3SM/OLMT:/home/e3smuser/OLMT rfiorella/model-containers:e3sm-openmpi-dev-latest
+
+aurora-cpu:
+	docker run --rm -it -v /code/ai-models/aurora:/home/aurora/work -v /data/aurora/data:/home/aurora/data -v /data/aurora/output:/home/aurora/output -v /data/aurora/hf-cache:/opt/hf-cache rfiorella/model-containers:aurora-cpu-latest
+
+aurora-cuda:
+	docker run --rm -it --gpus all -v /code/ai-models/aurora:/home/aurora/work -v /data/aurora/data:/home/aurora/data -v /data/aurora/output:/home/aurora/output -v /data/aurora/hf-cache:/opt/hf-cache rfiorella/model-containers:aurora-cuda-latest

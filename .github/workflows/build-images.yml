@@ -82,3 +82,88 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:e3sm-serial-dev-latest
           platforms: linux/amd64, linux/arm64
           build-args: BASE_TAG=base-serial-latest
+# aurora is self-contained (clones its own source) and does not use base-serial,
+# so these build in parallel with the jobs above.
+#
+# The cpu and cuda images are separate images, not one multi-arch manifest --
+# they carry different accelerators, not different arches of the same thing.
+#
+# The cpu image is multi-arch (amd64 + arm64). Built on native runners per arch
+# and joined with a manifest, following build-base above, rather than emulated
+# under QEMU -- a torch install plus an emulated python import check is painfully
+# slow on a QEMU aarch64 leg.
+#
+# The arm64 cpu image is CPU-only by necessity, not oversight: Metal/MPS is not
+# reachable from a Linux guest on Apple Silicon (neither Docker Desktop nor
+# apple/container passes the GPU through), so there is no arm64 GPU image to
+# build. For M-series GPU, run aurora natively on macOS with device="mps".
+  build-aurora-cpu:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, ubuntu-24.04-arm ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v7
+      - name: Get runner architecture
+        run: |
+          if [[ ${{matrix.os}} == "ubuntu-24.04-arm" ]]; then
+            echo "ARCH=arm64" >> $GITHUB_ENV
+          else
+            echo "ARCH=amd64" >> $GITHUB_ENV
+          fi
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: build and push aurora cpu image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./ai-models/aurora
+          file: ./ai-models/aurora/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-${{ env.ARCH }}-latest
+  aurora-cpu-manifest:
+    needs: build-aurora-cpu
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Pull images
+        run: |
+          docker pull ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-arm64-latest
+          docker pull ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-amd64-latest
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+      - name: Edit manifest
+        run: |
+          docker manifest create ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-latest \
+            --amend ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-arm64-latest \
+            --amend ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-amd64-latest
+          docker manifest push ${{ env.IMAGE_OWNER}}/model-containers:aurora-cpu-latest
+  build-aurora-cuda:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v7
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+      - name: build and push aurora cuda image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./ai-models/aurora
+          file: ./ai-models/aurora/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER}}/model-containers:aurora-cuda-latest
+          platforms: linux/amd64
+          build-args: |
+            BASE_IMAGE=nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+            TORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
