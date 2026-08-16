@@ -7,8 +7,14 @@
 #   runtime  - installs torch from the selected wheel index, then the
 #              locally built aurora wheel
 #
-# Build (CPU, matches the multi-arch pattern used elsewhere in this repo):
-#   docker build -t rfiorella/model-containers:aurora-latest ai-models/aurora
+# This builds two separate images, selected by build args. CI builds the cpu
+# image for amd64 + arm64 and joins them with a manifest; the cuda image is
+# amd64 only. There is no arm64 GPU image because Metal/MPS is not reachable
+# from a Linux guest on Apple Silicon -- for M-series GPU, install aurora
+# natively on macOS and use device="mps".
+#
+# Build (CPU):
+#   docker build -t rfiorella/model-containers:aurora-cpu-latest ai-models/aurora
 #
 # Build (CUDA 12.4):
 #   docker build \
@@ -42,8 +48,12 @@ RUN apt-get update -y \
         python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --break-system-packages --upgrade pip build hatchling hatch-vcs \
-    || python3 -m pip install --upgrade pip build hatchling hatch-vcs
+# Plain install first: it is what works on both supported bases (the python image
+# ships its own non-externally-managed python, and the CUDA base is ubuntu 22.04,
+# which predates PEP 668 enforcement -- and predates the flag itself, pip 22.0.2).
+# The flag is the fallback, for a base that does enforce PEP 668.
+RUN python3 -m pip install --upgrade pip build hatchling hatch-vcs \
+    || python3 -m pip install --break-system-packages --upgrade pip build hatchling hatch-vcs
 
 WORKDIR /src
 
