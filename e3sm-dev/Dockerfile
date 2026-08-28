@@ -17,14 +17,16 @@ RUN groupadd -r dockerusers \
 
 USER ${USER}
 
-## Install python libraries for OLMT
+## Install python libraries for OLMT and the EAMxx standalone test harness
+## (test-all-eamxx imports psutil, pyyaml, and packaging).
 RUN pip3 install --break-system-packages --upgrade pip \
     && pip3 install --break-system-packages --upgrade setuptools \
     && pip3 install --break-system-packages --upgrade wheel \
     && pip3 install --break-system-packages numpy Cython \
     && pip3 install --break-system-packages netcdf4 scipy mpi4py \
     && pip3 install --break-system-packages cftime configparser \
-    && pip3 install --break-system-packages h5py
+    && pip3 install --break-system-packages h5py \
+    && pip3 install --break-system-packages psutil pyyaml packaging
 
 USER root
 
