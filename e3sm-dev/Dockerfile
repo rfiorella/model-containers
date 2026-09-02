@@ -134,7 +134,9 @@ RUN cd / \
     && chown $USER /home/$USER/baselines/data \
     && chown $USER /home/$USER/output \
     && chown $USER /home/$USER/inputdata \
-    && ln -s /usr/bin/ncap2 /usr/bin/ncap
+    && ln -s /usr/bin/ncap2 /usr/bin/ncap \
+    && mkdir -p /E3SM /OLMT /scratch \
+    && chown $USER /E3SM /OLMT /scratch
 
 ADD cime_files /home/$USER/.cime
 
