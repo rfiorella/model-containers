@@ -3,7 +3,7 @@
 # WITH MICROARCHITECTURE TUNING SUPPORT
 #------------------------------------------------------------------------
 
-FROM ubuntu:noble
+FROM ubuntu:resolute
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
@@ -60,7 +60,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
-    libxml2 \
+    libxml2-16 \
     libxml2-dev \
     libswitch-perl \
     vim \
@@ -80,7 +80,8 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libgsl-dev \
     flex \
     nco \
-    ncview \
+    # ncview dropped: no longer in the Ubuntu archive as of 26.04 resolute
+    # (absent from main/universe/restricted/multiverse; was 2.1.8+ds-5build3 on noble).
     locales \
     gdb \
     valgrind \
@@ -144,7 +145,9 @@ RUN . /etc/profile.d/arch_flags.sh && \
    && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
    && cd PnetCDF \
    && autoreconf -i \
-   && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2 ${ARCH_FLAGS}" ./configure --enable-shared --disable-in-place-swap --prefix=/usr/ \
+   # PnetCDF 1.13.0 ncmpidump.h has `enum {false=0, true=1}`, which GCC 15 rejects:
+   # C23 makes true/false keywords, and GCC 15 defaults to -std=gnu23. Pin to gnu17.
+   && CC=mpicc FC=mpifort CPPFLAGS="-std=gnu17 -fPIC -O2 ${ARCH_FLAGS}" ./configure --enable-shared --disable-in-place-swap --prefix=/usr/ \
    && make \
    && make install \
    && cd / \

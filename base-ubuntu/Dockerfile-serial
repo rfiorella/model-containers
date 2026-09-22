@@ -2,7 +2,7 @@
 # Debian baseOS docker container to use with ELM/CTSM builds
 # ----------------------------------------------------------------------
 
-FROM ubuntu:noble
+FROM ubuntu:resolute
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
@@ -47,7 +47,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
-    libxml2 \
+    libxml2-16 \
     libxml2-dev \
     libswitch-perl \
     vim \
@@ -67,7 +67,8 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libgsl-dev \
     flex \
     nco \
-    ncview \
+    # ncview dropped: no longer in the Ubuntu archive as of 26.04 resolute
+    # (absent from main/universe/restricted/multiverse; was 2.1.8+ds-5build3 on noble).
     locales \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all \
