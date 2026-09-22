@@ -17,6 +17,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     && apt-get update -y \
     && apt-get upgrade -y && apt-get install -y tzdata \
     && apt-get install -y --no-install-recommends \
+    build-essential \
     cmake \
     git \
     gcc \
