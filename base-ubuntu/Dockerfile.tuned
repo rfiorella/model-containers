@@ -3,7 +3,7 @@
 # WITH MICROARCHITECTURE TUNING SUPPORT
 #------------------------------------------------------------------------
 
-FROM ubuntu:noble
+FROM ubuntu:resolute
 
 # Set a few variables that can be used to control the docker build
 ARG HDF5_VERSION=1.14.6
@@ -30,7 +30,8 @@ RUN echo "Building with architecture flags: ${ARCH_FLAGS}" && \
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
     && apt-get update -y \
     && apt-get upgrade -y && apt-get install -y tzdata \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
     cmake \
     git \
     gcc \
@@ -59,7 +60,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libhwloc-dev \
     libxml-libxml-perl \
     libxml2-utils \
-    libxml2 \
+    libxml2-16 \
     libxml2-dev \
     libswitch-perl \
     vim \
@@ -79,7 +80,8 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libgsl-dev \
     flex \
     nco \
-    ncview \
+    # ncview dropped: no longer in the Ubuntu archive as of 26.04 resolute
+    # (absent from main/universe/restricted/multiverse; was 2.1.8+ds-5build3 on noble).
     locales \
     gdb \
     valgrind \
@@ -138,9 +140,13 @@ RUN . /etc/profile.d/arch_flags.sh && \
     && rm hdf5-${HDF5_VERSION}.tar.gz
 
 ## PnetCDF
+# Pinned to 1.15.1 (was 1.13.0). 1.13.0's ncmpidump.h declares
+# `enum {false=0, true=1}`, which GCC 15 rejects because C23 makes true/false
+# keywords. Upstream guarded it in 1.14.1 and fixed it properly in 1.15.1
+# (typedef bool boolean via <stdbool.h>), so no -std=gnu17 dialect pin is needed.
 RUN . /etc/profile.d/arch_flags.sh && \
     cd / \
-   && git clone --depth 1 --branch checkpoint.1.13.0 https://github.com/Parallel-NetCDF/PnetCDF.git \
+   && git clone --depth 1 --branch checkpoint.1.15.1 https://github.com/Parallel-NetCDF/PnetCDF.git \
    && cd PnetCDF \
    && autoreconf -i \
    && CC=mpicc FC=mpifort CPPFLAGS="-fPIC -O2 ${ARCH_FLAGS}" ./configure --enable-shared --disable-in-place-swap --prefix=/usr/ \

@@ -25,8 +25,9 @@
 # Note: the CUDA base ships its own python; PYTHON_VERSION is ignored there.
 # ----------------------------------------------------------------------
 
-ARG PYTHON_VERSION=3.11
-ARG BASE_IMAGE=python:${PYTHON_VERSION}-slim-bookworm
+# For CPU version, now using hardened python image. May need to adjust for CUDA.
+ARG PYTHON_VERSION=3.14
+ARG BASE_IMAGE=python:${PYTHON_VERSION}-slim-trixie
 
 # ---------------------------------------------------------------- builder
 FROM ${BASE_IMAGE} AS builder
