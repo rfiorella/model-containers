@@ -16,7 +16,7 @@ ARG mpi_version=4.1.6
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
     && apt-get update -y \
     && apt-get upgrade -y && apt-get install -y tzdata \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
     cmake \
     git \
     gcc \
