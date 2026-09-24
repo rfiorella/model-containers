@@ -58,6 +58,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libffi8 \
     libffi-dev \
     libhwloc-dev \
+    libpmix-dev \
     libxml-libxml-perl \
     libxml2-utils \
     libxml2-16 \
@@ -105,7 +106,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
         && tar xvf openmpi-${mpi_version}.tar.gz \
         && cd openmpi-${mpi_version} \
         && . /etc/profile.d/arch_flags.sh \
-        && CFLAGS="-O3 ${ARCH_FLAGS}" FFLAGS="-O3 ${ARCH_FLAGS}" ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all \
+        && CFLAGS="-O3 ${ARCH_FLAGS}" FFLAGS="-O3 ${ARCH_FLAGS}" ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all --with-pmix=/usr \
         && make \
         && make install \
         && cd ../ ; \
