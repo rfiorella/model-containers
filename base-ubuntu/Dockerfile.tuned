@@ -33,7 +33,10 @@ ENV LANGUAGE=en_US.UTF-8
 ENV PYTHONUNBUFFERED=1
 
 # Update the system and install initial dependencies
-RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
+RUN echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries && \
+    echo 'Acquire::http::Timeout "30";' >> /etc/apt/apt.conf.d/80-retries && \
+    echo 'Acquire::https::Timeout "30";' >> /etc/apt/apt.conf.d/80-retries && \
+    ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
     && apt-get update -y \
     && apt-get upgrade -y && apt-get install -y tzdata \
     && apt-get install -y --no-install-recommends \
