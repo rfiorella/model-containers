@@ -87,7 +87,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     jq \
     software-properties-common \
     && apt-add-repository -y ppa:deadsnakes/ppa \
-    && apt-get update \
+    && apt-get update --fix-missing \
     && apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-venv \
