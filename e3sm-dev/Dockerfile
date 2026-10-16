@@ -20,15 +20,15 @@ USER ${USER}
 ## Install python libraries for OLMT and the EAMxx standalone test harness
 ## (test-all-eamxx imports psutil, pyyaml, and packaging).
 RUN python3 --version \
-    && pip3 --version \
-    && pip3 install --upgrade pip \
-    && pip3 install --upgrade setuptools \
-    && pip3 install --upgrade wheel \
-    && pip3 install numpy Cython \
-    && pip3 install netcdf4 scipy mpi4py \
-    && pip3 install cftime configparser \
-    && pip3 install h5py \
-    && pip3 install psutil pyyaml packaging
+    && /usr/bin/pip3 --version \
+    && /usr/bin/pip3 install --upgrade pip \
+    && /usr/bin/pip3 install --upgrade setuptools \
+    && /usr/bin/pip3 install --upgrade wheel \
+    && /usr/bin/pip3 install numpy Cython \
+    && /usr/bin/pip3 install netcdf4 scipy mpi4py \
+    && /usr/bin/pip3 install cftime configparser \
+    && /usr/bin/pip3 install h5py \
+    && /usr/bin/pip3 install psutil pyyaml packaging
 
 USER root
 
