@@ -96,12 +96,16 @@ RUN cd /tmp \
 # make check runs the full MOAB suite as a smoke test. OMPI_ALLOW_RUN_AS_ROOT is
 # needed because the image builds as root and OpenMPI otherwise refuses to launch
 # the mpiexec-based parallel tests. The check is non-fatal: MOAB 5.6.0's suite has
-# a few internal crashes on Ubuntu Noble's hardened glibc that are unrelated to
-# the coupling/remapping paths E3SM uses (e.g. vtk_test overruns a buffer that
-# _FORTIFY_SOURCE traps; imoab_read_compute_map segfaults on teardown after
-# computing correct results). Rather than gate the image on them, dump the logs
+# internal crashes under Ubuntu's hardened glibc that are unrelated to the
+# coupling/remapping paths E3SM uses (vtk_test overruns a buffer that
+# _FORTIFY_SOURCE traps). Rather than gate the image on them, dump the logs
 # for visibility and continue. The dependency/coupler results (Zoltan,
 # TempestRemap, mbcoupler, test/) all pass.
+#
+# Measured on 26.04 (resolute, glibc 2.43, GCC 15): vtk_test is the only
+# failure, 79/80 pass. The imoab_read_compute_map teardown segfault seen on
+# 24.04 (noble, glibc 2.39) no longer reproduces -- imoab_test, imoab_testF
+# and imoab_remapping all pass.
 RUN cd /tmp \
     && git clone https://bitbucket.org/fathomteam/moab.git \
     && cd moab \
@@ -136,7 +140,9 @@ RUN cd / \
     && chown $USER /home/$USER/baselines/data \
     && chown $USER /home/$USER/output \
     && chown $USER /home/$USER/inputdata \
-    && ln -s /usr/bin/ncap2 /usr/bin/ncap
+    && ln -s /usr/bin/ncap2 /usr/bin/ncap \
+    && mkdir -p /E3SM /OLMT /scratch \
+    && chown $USER /E3SM /OLMT /scratch
 
 ADD cime_files /home/$USER/.cime
 

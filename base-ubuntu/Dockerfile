@@ -16,7 +16,8 @@ ARG mpi_version=4.1.6
 RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone \
     && apt-get update -y \
     && apt-get upgrade -y && apt-get install -y tzdata \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
     cmake \
     git \
     gcc \
@@ -43,6 +44,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
     libffi7 \
     libffi-dev \
     libhwloc-dev \
+    libpmix-dev \
     libxml-libxml-perl \
     libxml2-utils \
     libxml2 \
@@ -88,7 +90,7 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONT
         && wget https://download.open-mpi.org/release/open-mpi/v${mpi_version_major}/openmpi-${mpi_version}.tar.gz \
         && tar xvf openmpi-${mpi_version}.tar.gz \
         && cd openmpi-${mpi_version} \
-        && ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all \
+        && ./configure --enable-shared --prefix=/usr --libdir=/usr/lib --includedir=/usr/include --with-fortran=all --enable-mpi-fortran=all --with-pmix=/usr \
         && make \
         && make install \
         && cd ../ ; \
