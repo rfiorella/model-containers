@@ -129,7 +129,7 @@ RUN echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries && \
     && apt autoremove
 
 RUN curl -sS https://bootstrap.pypa.io/git-pip.py | python3.10 \
-  ln -sf /usr/bin/python3.10 /usr/bin/python3 \
+  && ln -sf /usr/bin/python3.10 /usr/bin/python3 \
   && ln -sf /usr/bin/python3.10 /usr/bin/python \
   && ln -sf /usr/local/bin/pip3.10 /usr/bin/pip3 \
   && ln -sf /usr/local/bin/pip3.10 /usr/bin/pip
